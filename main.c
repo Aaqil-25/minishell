@@ -6,7 +6,7 @@
 /*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/13 17:58:34 by ymazzett          #+#    #+#             */
-/*   Updated: 2025/10/01 14:59:46 by codespace        ###   ########.fr       */
+/*   Updated: 2025/10/08 14:55:17 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,45 +52,63 @@ t_token	*create_token(char *value, t_token_type type)
 	return (new_token);
 }
 
-// LOGICS FOR TOKENIZING
-// - If the word is "|", create a PIPE token
-// - If the word is ">", create a REDIR_OUT token
-// - If the word is "<", create a REDIR_IN token
-// - If the word is ">>", create an APPEND token
-// - If the word is "<<", create a HEREDOC token
-// - Otherwise, create a WORD token
-t_token	*tokenize(char **array_of_words)
+// Determines the token type based on the string content
+t_token_type	get_token_type(char *word)
 {
-	int	i;
+	size_t	len;
 
-	if (!array_of_words || !*array_of_words)
+	len = ft_strlen(word);
+	if (!ft_strncmp(word, "|",len))
+		return (PIPE);
+	else if (!ft_strncmp(word, ">",len))
+		return (REDIR_OUT);
+	else if (!ft_strncmp(word, "<",len))
+		return (REDIR_IN);
+	else if (!ft_strncmp(word, ">>",len))
+		return (APPEND);
+	else if (!ft_strncmp(word, "<<",len))
+		return (HEREDOC);
+	else
+		return (WORD);
+}
+
+// Creates a linked list of tokens from an array of words
+t_token	*tokenize_all(char **array_of_words)
+{
+	t_token	*head;
+	t_token	*current;
+	t_token	*new_token;
+	int		i;
+
+	if (!array_of_words || !array_of_words[0])
 		return (NULL);
-	i = 0;
+	head = create_token(array_of_words[0], get_token_type(array_of_words[0]));
+	if (!head)
+		return (NULL);
+	current = head;
+	i = 1;
 	while (array_of_words[i])
 	{
-		if (!ft_strcmp(array_of_words[i], "|"))
-			return (create_token(array_of_words[i], PIPE));
-		else if (!ft_strcmp(array_of_words[i], ">"))
-			return (create_token(array_of_words[i], REDIR_OUT));
-		else if (!ft_strcmp(array_of_words[i], "<"))
-			return (create_token(array_of_words[i], REDIR_IN));
-		else if (!ft_strcmp(array_of_words[i], ">>"))
-			return (create_token(array_of_words[i], APPEND));
-		else if (!ft_strcmp(array_of_words[i], "<<"))
-			return (create_token(array_of_words[i], HEREDOC));
-		else
-			return (create_token(array_of_words[i], WORD));
+		new_token = create_token(array_of_words[i], get_token_type(array_of_words[i]));
+		if (!new_token)
+			return (head); // Return what we have so far
+		current->next = new_token;
+		current = new_token;
 		i++;
 	}
-	return (NULL);
-} // The problem with this function is that it only creates one token and returns. It should create a linked list of tokens and return the head of the list.
+	return (head);
+}
 
 void	handle_input(char *input)
 {
 	char	**array_of_words;
+	t_token	*tokens;
 
 	array_of_words = ft_split(input, ' ');
 	printf("DEBUG: Array of words [0]: %s\n", array_of_words[0]);
+
+	tokens = tokenize_all(array_of_words);
+	printf("DEBUG: Tokens [0]: %s\n", tokens->value);
 
 	free_array_of_words(&array_of_words);
 }

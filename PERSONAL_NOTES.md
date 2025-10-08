@@ -14,6 +14,10 @@ Minishell... finally minishell. Supposed to be the hardest project from here, he
 - System shall split input argument as a list of strings; - IN PROGRESS
 - System shall call a function that assigns each string as a token, assigns its token type, and return it all as a list of tokens;
 
+### Pt. 2 - 08/10/2025
+- System shall parse each token on respective command structures;
+- System shall be divided in "find content of commands", "find relations with previous and next" and then "fill commands with proper inputs";
+
 ## List of Mallocs
 
 It's important to keep track, so I can know if I am freeing it properly later on...
@@ -52,3 +56,8 @@ At some point I will need something similar to what I used to get_next_line to h
 
 I just tested and the splitting is being NULL terminated as expected.
 
+-----------------
+
+Ok, today is the day. Today I am finishing the basic functions of parsing.
+
+Ehh ok, I finished it. Started planing the next steps as well.

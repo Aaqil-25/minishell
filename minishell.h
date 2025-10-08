@@ -6,7 +6,7 @@
 /*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/13 18:30:10 by ymazzett          #+#    #+#             */
-/*   Updated: 2025/10/01 14:16:52 by codespace        ###   ########.fr       */
+/*   Updated: 2025/10/08 14:52:40 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,10 +41,10 @@ typedef struct s_token
 
 typedef enum e_redir_type
 {
-	REDIR_IN,		// < file
-	REDIR_OUT,		// > file (truncate)
-	REDIR_APPEND,	// >> file
-	REDIR_HEREDOC	// << DELIMITER
+	C_REDIR_IN,		// < file
+	C_REDIR_OUT,		// > file (truncate)
+	C_REDIR_APPEND,	// >> file
+	C_REDIR_HEREDOC	// << DELIMITER
 }	t_redir_type;
 
 typedef struct s_redir
