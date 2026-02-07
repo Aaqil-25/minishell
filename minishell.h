@@ -16,35 +16,36 @@
 # include <unistd.h>
 # include <stdlib.h>
 # include <stdio.h>
+# include <signal.h>
 # include "libft/libft.h"
 # include "libft/gnl/get_next_line.h"
-# define SIG_CTRL_C		2   // Ctrl-C (SIGINT)
-# define SIG_CTRL_D		4   // Ctrl-D (EOF)
-# define SIG_CTRL_BS	28  // Ctrl-\ (SIGQUIT)
+# include <readline/readline.h>
+# include <readline/history.h>
+# define PROMPT	"> "
 
 typedef enum e_token_type
 {
-	WORD,		// Regular word: "ls", "-la", "filename.txt"
-	PIPE,		// |
-	REDIR_IN,	// <
-	REDIR_OUT,	// >
-	APPEND,		// >>
-	HEREDOC		// <<
+	WORD,
+	PIPE,
+	REDIR_IN,
+	REDIR_OUT,
+	APPEND,
+	HEREDOC
 }	t_token_type;
 
 typedef struct s_token
 {
-	char				*value;     // The string "ls", ">", etc.
-	enum e_token_type	type;       // WORD, PIPE, REDIR_OUT, REDIR_IN, etc.
-	struct s_token		*next;      // Pointer to next token in the list
+	char				*value;
+	enum e_token_type	type;
+	struct s_token		*next;
 }	t_token;
 
 typedef enum e_redir_type
 {
-	C_REDIR_IN,		// < file
-	C_REDIR_OUT,		// > file (truncate)
-	C_REDIR_APPEND,	// >> file
-	C_REDIR_HEREDOC	// << DELIMITER
+	C_REDIR_IN,
+	C_REDIR_OUT,
+	C_REDIR_APPEND,
+	C_REDIR_HEREDOC
 }	t_redir_type;
 
 typedef struct s_redir
@@ -62,12 +63,16 @@ typedef struct s_command
 	struct s_command	*prev;
 }	t_command;
 
+/* Signal: at most one global, subject-mandated */
+extern volatile sig_atomic_t	g_signal;
+
 /* Token / lexer */
-t_token		*lexer(char *line);		/* line -> token list; NULL on error/unclosed quote */
+t_token		*lexer(char *line);
 void		free_tokens(t_token **head);
+t_token		*tokenize_all(char **array_of_words);
 
 /* Parser: tokens -> command list */
-t_command	*parser(t_token **head);	/* consumes/frees tokens; NULL on syntax error */
+t_command	*parser(t_token **head);
 void		free_commands(t_command **head);
 
 /* Utils */

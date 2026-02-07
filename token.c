@@ -12,11 +12,6 @@
 
 #include "minishell.h"
 
-/*
- * Stubs until full lexer/parser are implemented.
- * See PARSING_IMPLEMENTATION_GUIDE.md for the real algorithms.
- */
-
 t_token	*lexer(char *line)
 {
 	(void)line;
