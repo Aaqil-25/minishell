@@ -108,8 +108,11 @@ void	handle_input(char *input)
 	printf("DEBUG: Array of words [0]: %s\n", array_of_words[0]);
 
 	tokens = tokenize_all(array_of_words);
-	printf("DEBUG: Tokens [0]: %s\n", tokens->value);
-
+	if (tokens)
+	{
+		printf("DEBUG: Tokens [0]: %s\n", tokens->value);
+		free_tokens(&tokens);
+	}
 	free_array_of_words(&array_of_words);
 }
 

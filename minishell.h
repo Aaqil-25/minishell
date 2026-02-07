@@ -49,22 +49,30 @@ typedef enum e_redir_type
 
 typedef struct s_redir
 {
-	enum e_redir_type  type;
-	char               *filename;
+	enum e_redir_type	type;
+	char				*filename;	/* for << this is the delimiter */
+	struct s_redir		*next;
 }	t_redir;
 
 typedef struct s_command
 {
-	char            **args;         // Array of strings, ending with NULL
-	t_redir         *input;         // Input redirection (< file)
-	t_redir         *output;        // Output redirection (>, >>)
-	struct s_command *next;         // Next command in the pipeline (if there's a pipe |)
-	struct s_command *prev;         // Sometimes useful
+	char				**args;		/* array of strings, NULL-terminated */
+	t_redir				*redirs;	/* list of all redirections (in order) */
+	struct s_command	*next;		/* next command in pipeline (|) */
+	struct s_command	*prev;
 }	t_command;
 
+/* Token / lexer */
+t_token		*lexer(char *line);		/* line -> token list; NULL on error/unclosed quote */
+void		free_tokens(t_token **head);
 
-void	free_array_of_words(char ***array_of_words);
-size_t	arraylen(char **array);
+/* Parser: tokens -> command list */
+t_command	*parser(t_token **head);	/* consumes/frees tokens; NULL on syntax error */
+void		free_commands(t_command **head);
+
+/* Utils */
+void		free_array_of_words(char ***array_of_words);
+size_t		arraylen(char **array);
 
 
 #endif
