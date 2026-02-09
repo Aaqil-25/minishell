@@ -79,5 +79,4 @@ void		free_commands(t_command **head);
 void		free_array_of_words(char ***array_of_words);
 size_t		arraylen(char **array);
 
-
 #endif

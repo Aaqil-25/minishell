@@ -24,13 +24,6 @@ static void	sigint_handler(int sig)
 	rl_redisplay();
 }
 
-static void	sigquit_handler(int sig)
-{
-	(void)sig;
-	g_signal = SIGQUIT;
-	write(1, "\n", 1);
-}
-
 void	handle_input(char *input)
 {
 	char	**array_of_words;
@@ -63,17 +56,13 @@ int	prompt_and_read(void)
 int	main(void)
 {
 	struct sigaction	sa_int;
-	struct sigaction	sa_quit;
 	int					error;
 
 	sa_int.sa_handler = sigint_handler;
 	sigemptyset(&sa_int.sa_mask);
 	sa_int.sa_flags = 0;
 	sigaction(SIGINT, &sa_int, NULL);
-	sa_quit.sa_handler = sigquit_handler;
-	sigemptyset(&sa_quit.sa_mask);
-	sa_quit.sa_flags = 0;
-	sigaction(SIGQUIT, &sa_quit, NULL);
+	signal(SIGQUIT, SIG_IGN);
 	error = 0;
 	while (!error)
 		error = prompt_and_read();
