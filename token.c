@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   token.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/08 12:10:43 by codespace         #+#    #+#             */
-/*   Updated: 2025/10/08 12:10:44 by codespace        ###   ########.fr       */
+/*   Created: 2026/02/09 16:45:06 by mabdur-r          #+#    #+#             */
+/*   Updated: 2026/02/09 16:45:06 by mabdur-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ t_token	*lexer(char *line)
 	(void)line;
 	return (NULL);
 }
+/* ************************************************************************** */
 
 void	free_tokens(t_token **head)
 {

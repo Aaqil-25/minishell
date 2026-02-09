@@ -8,11 +8,24 @@ RM = rm -f
 OBJ_DIR = ./obj
 
 SRC = main.c \
+		signals.c \
+		term.c \
+		loop.c \
 		token.c \
 		utils.c \
 		tokenize.c \
 		execution.c \
-		builtins.c \
+		exec_env.c \
+		exec_redir.c \
+		exec_path.c \
+		exec_builtin.c \
+		builtin_echo.c \
+		builtin_cd.c \
+		builtin_pwd.c \
+		builtin_env.c \
+		builtin_export.c \
+		builtin_unset.c \
+		builtin_exit.c \
 		libft/gnl/get_next_line.c libft/gnl/get_next_line_utils.c \
 		libft/ft_atoi.c libft/ft_bzero.c libft/ft_isalnum.c libft/ft_isalpha.c libft/ft_tolower.c \
 		libft/ft_isascii.c libft/ft_isdigit.c libft/ft_isprint.c libft/ft_memchr.c libft/ft_memcpy.c \

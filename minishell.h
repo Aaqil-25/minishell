@@ -64,11 +64,8 @@ typedef struct s_command
 	struct s_command	*prev;
 }	t_command;
 
-/* Signal: at most one global, subject-mandated */
+/* Signal: subject allows one global (signal number only). */
 extern volatile sig_atomic_t	g_signal;
-
-/* Last exit status of foreground pipeline (for $?). Set by execution. */
-extern int						g_exit_status;
 
 /* Token / lexer */
 t_token		*lexer(char *line);
@@ -83,7 +80,7 @@ void		free_commands(t_command **head);
 void		free_array_of_words(char ***array_of_words);
 size_t		arraylen(char **array);
 
-/* Execution: env is modifiable copy of environment (for export/unset and execve) */
+/* Execution returns last exit status (store it in your shell state). */
 int			execute(t_command *cmds, char **env);
 
 /* Builtins: return exit status. env only for export/unset/env. */
@@ -93,6 +90,11 @@ int			builtin_pwd(char **args);
 int			builtin_export(char **args, char ***env);
 int			builtin_unset(char **args, char ***env);
 int			builtin_env(char **args, char **env);
-int			builtin_exit(char **args);
+int			builtin_exit(char **args, int last_status);
+
+/* Interactive shell helpers */
+void		signals_setup(void);
+void		term_apply(int prompt_mode);
+int			shell_loop(void);
 
 #endif
