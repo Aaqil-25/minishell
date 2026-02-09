@@ -16,11 +16,19 @@
 # include <unistd.h>
 # include <stdlib.h>
 # include <stdio.h>
+# include <signal.h>
 # include "libft/libft.h"
 # include "libft/gnl/get_next_line.h"
-# define SIG_CTRL_C		2   // Ctrl-C (SIGINT)
-# define SIG_CTRL_D		4   // Ctrl-D (EOF)
-# define SIG_CTRL_BS	28  // Ctrl-\ (SIGQUIT)
+
+# define SIG_CTRL_C		2
+# define SIG_CTRL_D		4
+# define SIG_CTRL_BS	28
+
+/* At most one global: signal number only (subject) */
+extern volatile sig_atomic_t	g_signal_number;
+
+/* Last exit status of foreground pipeline (for $?). Set by execution. */
+extern int					g_exit_status;
 
 typedef enum e_token_type
 {
@@ -49,22 +57,41 @@ typedef enum e_redir_type
 
 typedef struct s_redir
 {
-	enum e_redir_type  type;
-	char               *filename;
+	enum e_redir_type	type;
+	char				*filename;	/* for << this is the delimiter */
+	struct s_redir		*next;
 }	t_redir;
 
 typedef struct s_command
 {
-	char            **args;         // Array of strings, ending with NULL
-	t_redir         *input;         // Input redirection (< file)
-	t_redir         *output;        // Output redirection (>, >>)
-	struct s_command *next;         // Next command in the pipeline (if there's a pipe |)
-	struct s_command *prev;         // Sometimes useful
+	char				**args;		/* array of strings, NULL-terminated */
+	t_redir				*redirs;	/* list of all redirections (in order) */
+	struct s_command	*next;		/* next command in pipeline (|) */
+	struct s_command	*prev;
 }	t_command;
 
+/* Token / lexer */
+t_token		*lexer(char *line);		/* line -> token list; NULL on error/unclosed quote */
+void		free_tokens(t_token **head);
 
-void	free_array_of_words(char ***array_of_words);
-size_t	arraylen(char **array);
+/* Parser: tokens -> command list */
+t_command	*parser(t_token **head);	/* consumes/frees tokens; NULL on syntax error */
+void		free_commands(t_command **head);
 
+/* Utils */
+void		free_array_of_words(char ***array_of_words);
+size_t		arraylen(char **array);
+
+/* Execution: env is modifiable copy of environment (for export/unset and execve) */
+int			execute(t_command *cmds, char **env);
+
+/* Builtins: return exit status. env only for export/unset/env. */
+int			builtin_echo(char **args);
+int			builtin_cd(char **args);
+int			builtin_pwd(char **args);
+int			builtin_export(char **args, char ***env);
+int			builtin_unset(char **args, char ***env);
+int			builtin_env(char **args, char **env);
+int			builtin_exit(char **args);
 
 #endif
