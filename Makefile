@@ -1,13 +1,16 @@
 NAME = minishell
 
 OBJ = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRC))
-CC = gcc
+CC = cc
 CFLAGS = -Wall -Wextra -Werror -g
+LDFLAGS = -lreadline
 RM = rm -f
 OBJ_DIR = ./obj
 
 SRC = main.c \
 		token.c \
+		utils.c \
+		tokenize.c \
 		execution.c \
 		builtins.c \
 		libft/gnl/get_next_line.c libft/gnl/get_next_line_utils.c \
@@ -24,12 +27,12 @@ all: $(NAME)
 
 
 $(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJ) $(LDFLAGS) -o $(NAME)
 
 
 $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@ -I./libft/ -I./libft/gnl/
+	$(CC) $(CFLAGS) -c $< -o $@ -I. -I./libft -I./libft/gnl
 
 
 clean:

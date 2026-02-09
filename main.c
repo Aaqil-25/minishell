@@ -11,92 +11,66 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <termios.h>
 
-void	free_array_of_words(char ***array_of_words)
+volatile sig_atomic_t	g_signal = 0;
+
+static struct termios	g_term_orig;
+static int				g_term_orig_set = 0;
+
+static void	term_restore(void)
 {
-	int	i;
+	if (g_term_orig_set)
+		tcsetattr(STDIN_FILENO, TCSANOW, &g_term_orig);
+}
 
-	if (!array_of_words || !*array_of_words)
+static void	term_init(void)
+{
+	if (g_term_orig_set)
 		return ;
-	i = 0;
-	while ((*array_of_words)[i])
+	if (tcgetattr(STDIN_FILENO, &g_term_orig) != 0)
+		return ;
+	g_term_orig_set = 1;
+}
+
+/*
+ * Bash-like UX: don't print "^C" / "^\\" when pressing control keys.
+ * This is controlled by the terminal flag ECHOCTL.
+ *
+ * Additionally: while sitting at the prompt, bash treats Ctrl+\ as a no-op.
+ * The 42-allowed way to get that behaviour is to disable the terminal "quit"
+ * special character (VQUIT) while reading input, and ignore SIGQUIT.
+ */
+static void	term_apply(int prompt_mode)
+{
+	struct termios	t;
+
+	term_init();
+	if (!g_term_orig_set)
+		return ;
+	t = g_term_orig;
+#ifdef ECHOCTL
+	t.c_lflag &= ~(ECHOCTL);
+#endif
+	if (prompt_mode)
 	{
-		free((*array_of_words)[i]);
-		i++;
+#ifdef VQUIT
+# ifdef _POSIX_VDISABLE
+		t.c_cc[VQUIT] = _POSIX_VDISABLE;
+# endif
+#endif
 	}
-	free(*array_of_words);
-	*array_of_words = NULL;
+	tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }
 
-size_t arraylen(char **array)
+static void	sigint_handler(int sig)
 {
-	size_t len = 0;
-
-	if (!array)
-		return 0;
-	while (array[len] != NULL)
-		len++;
-	return len;
-}
-
-t_token	*create_token(char *value, t_token_type type)
-{
-	t_token	*new_token;
-
-	new_token = malloc(sizeof(t_token));
-	if (!new_token)
-		return (NULL);
-	new_token->value = ft_strdup(value);
-	new_token->type = type;
-	new_token->next = NULL;
-	return (new_token);
-}
-
-// Determines the token type based on the string content
-t_token_type	get_token_type(char *word)
-{
-	size_t	len;
-
-	len = ft_strlen(word);
-	if (!ft_strncmp(word, "|",len))
-		return (PIPE);
-	else if (!ft_strncmp(word, ">",len))
-		return (REDIR_OUT);
-	else if (!ft_strncmp(word, "<",len))
-		return (REDIR_IN);
-	else if (!ft_strncmp(word, ">>",len))
-		return (APPEND);
-	else if (!ft_strncmp(word, "<<",len))
-		return (HEREDOC);
-	else
-		return (WORD);
-}
-
-// Creates a linked list of tokens from an array of words
-t_token	*tokenize_all(char **array_of_words)
-{
-	t_token	*head;
-	t_token	*current;
-	t_token	*new_token;
-	int		i;
-
-	if (!array_of_words || !array_of_words[0])
-		return (NULL);
-	head = create_token(array_of_words[0], get_token_type(array_of_words[0]));
-	if (!head)
-		return (NULL);
-	current = head;
-	i = 1;
-	while (array_of_words[i])
-	{
-		new_token = create_token(array_of_words[i], get_token_type(array_of_words[i]));
-		if (!new_token)
-			return (head); // Return what we have so far
-		current->next = new_token;
-		current = new_token;
-		i++;
-	}
-	return (head);
+	(void)sig;
+	g_signal = SIGINT;
+	write(1, "\n", 1);
+	rl_replace_line("", 0);
+	rl_on_new_line();
+	rl_redisplay();
 }
 
 void	handle_input(char *input)
@@ -105,42 +79,50 @@ void	handle_input(char *input)
 	t_token	*tokens;
 
 	array_of_words = ft_split(input, ' ');
-	printf("DEBUG: Array of words [0]: %s\n", array_of_words[0]);
-
+	if (!array_of_words)
+		return ;
 	tokens = tokenize_all(array_of_words);
-	printf("DEBUG: Tokens [0]: %s\n", tokens->value);
-
+	if (tokens)
+		free_tokens(&tokens);
 	free_array_of_words(&array_of_words);
 }
 
 int	prompt_and_read(void)
 {
-	char	buffer[1024]; // ALSO IS CAUSING A LEAK
-	int		bytes_read;
+	char	*line;
 
-	write(1, "> ", 2);
-	bytes_read = read(0, buffer, 1023); // THIS WILL CAUSE AN ERROR FOR BIGGER INPUTS
-	if (bytes_read < 0)
-	{
-		write(2, "Read error\n", 12);
+	term_apply(1);
+	g_signal = 0;
+	line = readline(PROMPT);
+	term_apply(0);
+	if (!line)
 		return (1);
-	}
-	else if (bytes_read > 1)
-	{
-		buffer[bytes_read] = '\0';
-		printf("You entered: %s", buffer);
-		handle_input(buffer);
-	}
+	if (g_signal != SIGINT && line[0] != '\0')
+		add_history(line);
+	handle_input(line);
+	free(line);
 	return (0);
 }
 
 int	main(void)
 {
-	int	error;
+	struct sigaction	sa_int;
+	struct sigaction	sa_quit;
+	int					error;
 
+	term_apply(1);
+	sa_int.sa_handler = sigint_handler;
+	sigemptyset(&sa_int.sa_mask);
+	sa_int.sa_flags = 0;
+	sigaction(SIGINT, &sa_int, NULL);
+	sa_quit.sa_handler = SIG_IGN;
+	sigemptyset(&sa_quit.sa_mask);
+	sa_quit.sa_flags = 0;
+	sigaction(SIGQUIT, &sa_quit, NULL);
 	error = 0;
 	while (!error)
 		error = prompt_and_read();
+	term_restore();
 	if (error == 1)
 		return (1);
 	return (0);
