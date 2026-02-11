@@ -12,21 +12,27 @@
 
 #include "minishell.h"
 
-static void	handle_input(char *input)
+static void	handle_input(char *input, char **env)
 {
-	char	**array_of_words;
-	t_token	*tokens;
+	t_command	cmd;
+	char		**array_of_words;
 
 	array_of_words = ft_split(input, ' ');
-	if (!array_of_words)
+	if (!array_of_words || !array_of_words[0])
+	{
+		if (array_of_words)
+			free_array_of_words(&array_of_words);
 		return ;
-	tokens = tokenize_all(array_of_words);
-	if (tokens)
-		free_tokens(&tokens);
+	}
+	cmd.args = array_of_words;
+	cmd.redirs = NULL;
+	cmd.next = NULL;
+	cmd.prev = NULL;
+	(void)execute(&cmd, env);
 	free_array_of_words(&array_of_words);
 }
 
-static int	prompt_and_read(void)
+static int	prompt_and_read(char **env)
 {
 	char	*line;
 
@@ -38,17 +44,17 @@ static int	prompt_and_read(void)
 		return (1);
 	if (g_signal != SIGINT && line[0] != '\0')
 		add_history(line);
-	handle_input(line);
+	handle_input(line, env);
 	free(line);
 	return (0);
 }
 
-int	shell_loop(void)
+int	shell_loop(char **env)
 {
 	int	error;
 
 	error = 0;
 	while (!error)
-		error = prompt_and_read();
+		error = prompt_and_read(env);
 	return (error != 0);
 }

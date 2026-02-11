@@ -92,9 +92,10 @@ int			builtin_unset(char **args, char ***env);
 int			builtin_env(char **args, char **env);
 int			builtin_exit(char **args, int last_status);
 
+/* --------------------tmp functions------------------------------ */
 /* Interactive shell helpers */
 void		signals_setup(void);
 void		term_apply(int prompt_mode);
-int			shell_loop(void);
+int			shell_loop(char **env);
 
 #endif

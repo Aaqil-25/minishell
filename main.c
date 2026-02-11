@@ -12,8 +12,18 @@
 
 #include "minishell.h"
 
+int	main(int argc, char **argv, char **envp)
+{
+	(void)argc;
+	(void)argv;
+	signals_setup();
+	return (shell_loop(envp));
+}
+
+/*
 int	main(void)
 {
 	signals_setup();
 	return (shell_loop());
 }
+*/
