@@ -13,6 +13,7 @@ SRC = main.c \
 		loop.c \
 		token.c \
 		utils.c \
+		env_utils.c \
 		tokenize.c \
 		execution.c \
 		exec_env.c \

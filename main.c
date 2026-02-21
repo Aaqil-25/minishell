@@ -14,10 +14,17 @@
 
 int	main(int argc, char **argv, char **envp)
 {
+	char	**env;
+
 	(void)argc;
 	(void)argv;
 	signals_setup();
-	return (shell_loop(envp));
+	env = env_dup(envp);
+	if (!env)
+		return (1);
+	shell_loop(&env);
+	free_array_of_words(&env);
+	return (0);
 }
 
 /*

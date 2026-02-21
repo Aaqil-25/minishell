@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-static void	handle_input(char *input, char **env)
+static void	handle_input(char *input, char ***env)
 {
 	t_command	cmd;
 	char		**array_of_words;
@@ -32,7 +32,7 @@ static void	handle_input(char *input, char **env)
 	free_array_of_words(&array_of_words);
 }
 
-static int	prompt_and_read(char **env)
+static int	prompt_and_read(char ***env)
 {
 	char	*line;
 
@@ -49,7 +49,7 @@ static int	prompt_and_read(char **env)
 	return (0);
 }
 
-int	shell_loop(char **env)
+int	shell_loop(char ***env)
 {
 	int	error;
 

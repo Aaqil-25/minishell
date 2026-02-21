@@ -14,7 +14,18 @@
 
 int	builtin_unset(char **args, char ***env)
 {
-	(void)args;
-	(void)env;
-	return (0);
+	int	i;
+	int	ret;
+
+	if (!args || !args[1])
+		return (0);
+	ret = 0;
+	i = 1;
+	while (args[i])
+	{
+		if (env_unset_entry(env, args[i]) != 0)
+			ret = 1;
+		i++;
+	}
+	return (ret);
 }

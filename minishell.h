@@ -80,8 +80,13 @@ void		free_commands(t_command **head);
 void		free_array_of_words(char ***array_of_words);
 size_t		arraylen(char **array);
 
+/* Environment utilities */
+char		**env_dup(char **envp);
+int			env_find_index(char **env, const char *name);
+int			env_unset_entry(char ***env, const char *name);
+
 /* Execution returns last exit status (store it in your shell state). */
-int			execute(t_command *cmds, char **env);
+int			execute(t_command *cmds, char ***env);
 
 /* Builtins: return exit status. env only for export/unset/env. */
 int			builtin_echo(char **args);
@@ -96,6 +101,6 @@ int			builtin_exit(char **args, int last_status);
 /* Interactive shell helpers */
 void		signals_setup(void);
 void		term_apply(int prompt_mode);
-int			shell_loop(char **env);
+int			shell_loop(char ***env);
 
 #endif

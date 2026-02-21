@@ -13,11 +13,11 @@
 #include "exec_internal.h"
 #include <sys/wait.h>
 
-static int	run_builtin_cmd(t_command *cmd, char **env, int last_status)
+static int	run_builtin_cmd(t_command *cmd, char ***env, int last_status)
 {
 	if (exec_apply_redirections(cmd) != 0)
 		return (1);
-	return (exec_run_builtin(cmd, &env, last_status));
+	return (exec_run_builtin(cmd, env, last_status));
 }
 
 static int	run_external_cmd(t_command *cmd, char **env)
@@ -47,22 +47,22 @@ static int	run_external_cmd(t_command *cmd, char **env)
 	return (1);
 }
 
-static int	run_single(t_command *cmd, char **env, int last_status)
+static int	run_single(t_command *cmd, char ***env, int last_status)
 {
 	if (!cmd->args || !cmd->args[0])
 		return (last_status);
 	if (exec_is_builtin(cmd->args[0]))
 		return (run_builtin_cmd(cmd, env, last_status));
-	return (run_external_cmd(cmd, env));
+	return (run_external_cmd(cmd, *env));
 }
 
-static int	run_pipeline(t_command *cmds, int n, char **env, int last_status)
+static int	run_pipeline(t_command *cmds, int n, char ***env, int last_status)
 {
 	(void)n;
 	return (run_single(cmds, env, last_status));
 }
 
-int	execute(t_command *cmds, char **env)
+int	execute(t_command *cmds, char ***env)
 {
 	t_command	*cur;
 	int			n;

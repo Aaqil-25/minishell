@@ -6,7 +6,7 @@
 /*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/09 16:48:31 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/02/09 16:48:35 by mabdur-r         ###   ########.fr       */
+/*   Updated: 2026/02/21 15:02:05 by mabdur-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,12 @@ char	*exec_find_path(char *name, char **env)
 
 	if (!name || !name[0])
 		return (NULL);
-	if (ft_strchr(name, '/') && access(name, X_OK) == 0)
-		return (ft_strdup(name));
+	if (ft_strchr(name, '/'))
+	{
+		if (access(name, X_OK) == 0)
+			return (ft_strdup(name));
+		return (NULL);
+	}
 	path_env = exec_get_env_value(env, "PATH");
 	if (!path_env)
 		return (NULL);
