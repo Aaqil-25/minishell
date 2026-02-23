@@ -6,7 +6,7 @@
 /*   By: ymazzett <ymazzett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 14:04:23 by ymazzett          #+#    #+#             */
-/*   Updated: 2026/02/23 14:26:03 by ymazzett         ###   ########.fr       */
+/*   Updated: 2026/02/23 16:23:14 by ymazzett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,10 @@ t_command	*parser(t_token **head)
 	cmd = malloc(sizeof(t_command));
 	if (!cmd)
 		return (NULL);
+	cmd->args = NULL;
+	cmd->redirs = NULL;
+	cmd->next = NULL;
+	cmd->prev = NULL;
 	while (current)
 	{
 		if (current->type == WORD)
