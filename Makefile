@@ -12,6 +12,7 @@ SRC = main.c \
 		term.c \
 		loop.c \
 		token.c \
+		parsing.c \
 		utils.c \
 		tokenize.c \
 		execution.c \

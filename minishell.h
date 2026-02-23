@@ -79,6 +79,7 @@ void		free_commands(t_command **head);
 /* Utils */
 void		free_array_of_words(char ***array_of_words);
 size_t		arraylen(char **array);
+char		**append_to_array(char **array, char *new_str);
 
 /* Execution returns last exit status (store it in your shell state). */
 int			execute(t_command *cmds, char **env);
