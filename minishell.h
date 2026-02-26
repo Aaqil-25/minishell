@@ -65,7 +65,7 @@ typedef struct s_command
 }	t_command;
 
 /* Signal: subject allows one global (signal number only). */
-extern volatile sig_atomic_t	g_signal;
+static volatile sig_atomic_t	g_signal = 0;
 
 /* Token / lexer */
 t_token		*lexer(char *line);

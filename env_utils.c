@@ -6,7 +6,7 @@
 /*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/21 15:10:00 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/02/21 15:10:00 by mabdur-r         ###   ########.fr       */
+/*   Updated: 2026/02/26 12:52:02 by mabdur-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,12 +58,31 @@ int	env_find_index(char **env, const char *name)
 	return (-1);
 }
 
+static char	**env_copy_without_index(char **env, int idx, size_t count)
+{
+	int		i;
+	char	**new_env;
+
+	new_env = ft_calloc(count, sizeof(char *));
+	if (!new_env)
+		return (NULL);
+	i = 0;
+	while (env[i])
+	{
+		if (i < idx)
+			new_env[i] = env[i];
+		else if (i > idx)
+			new_env[i - 1] = env[i];
+		i++;
+	}
+	return (new_env);
+}
+
 int	env_unset_entry(char ***env, const char *name)
 {
 	int		idx;
-	int		i;
-	char	**new_env;
 	size_t	count;
+	char	**new_env;
 
 	if (!env || !*env || !name)
 		return (-1);
@@ -73,18 +92,9 @@ int	env_unset_entry(char ***env, const char *name)
 	count = arraylen(*env);
 	if (count == 0)
 		return (-1);
-	new_env = ft_calloc(count, sizeof(char *));
+	new_env = env_copy_without_index(*env, idx, count);
 	if (!new_env)
 		return (-1);
-	i = 0;
-	while ((*env)[i])
-	{
-		if (i < idx)
-			new_env[i] = (*env)[i];
-		else if (i > idx)
-			new_env[i - 1] = (*env)[i];
-		i++;
-	}
 	free((*env)[idx]);
 	free(*env);
 	*env = new_env;
