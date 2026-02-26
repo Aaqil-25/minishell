@@ -26,12 +26,12 @@
 
 typedef enum e_token_type
 {
-	WORD,
-	PIPE,
-	REDIR_IN,
-	REDIR_OUT,
-	APPEND,
-	HEREDOC
+	REDIR_IN = 0,
+	REDIR_OUT = 1,
+	APPEND = 2,
+	HEREDOC = 3,
+	WORD = 4,
+	PIPE = 5
 }	t_token_type;
 
 typedef struct s_token
@@ -43,10 +43,10 @@ typedef struct s_token
 
 typedef enum e_redir_type
 {
-	C_REDIR_IN,
-	C_REDIR_OUT,
-	C_REDIR_APPEND,
-	C_REDIR_HEREDOC
+	C_REDIR_IN = 0,
+	C_REDIR_OUT = 1,
+	C_REDIR_APPEND = 2,
+	C_REDIR_HEREDOC = 3
 }	t_redir_type;
 
 typedef struct s_redir
@@ -65,7 +65,7 @@ typedef struct s_command
 }	t_command;
 
 /* Signal: subject allows one global (signal number only). */
-extern volatile sig_atomic_t	g_signal;
+static volatile sig_atomic_t	g_signal = 0;
 
 /* Token / lexer */
 t_token		*lexer(char *line);

@@ -3,16 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   signals.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymazzett <ymazzett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/09 16:46:16 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/02/09 16:46:19 by mabdur-r         ###   ########.fr       */
+/*   Updated: 2026/02/26 16:04:59 by ymazzett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-volatile sig_atomic_t	g_signal = 0;
 
 static void	sigint_handler(int sig)
 {
