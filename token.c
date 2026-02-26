@@ -14,8 +14,19 @@
 
 t_token	*lexer(char *line)
 {
-	(void)line;
-	return (NULL);
+	char	**array_of_words;
+	t_token	*tokens;
+
+	array_of_words = ft_split(line, ' ');
+	if (!array_of_words || !array_of_words[0])
+	{
+		if (array_of_words)
+			free_array_of_words(&array_of_words);
+		return (NULL);
+	}
+	tokens = tokenize_all(array_of_words);
+	free_array_of_words(&array_of_words);
+	return (tokens);
 }
 /* ************************************************************************** */
 
@@ -35,12 +46,6 @@ void	free_tokens(t_token **head)
 		cur = next;
 	}
 	*head = NULL;
-}
-
-t_command	*parser(t_token **head)
-{
-	(void)head;
-	return (NULL);
 }
 
 static void	free_redirs(t_redir *r)

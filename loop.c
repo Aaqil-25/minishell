@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   loop.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ymazzett <ymazzett@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/09 16:46:30 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/02/09 16:46:33 by mabdur-r         ###   ########.fr       */
+/*   Updated: 2026/02/26 16:34:09 by ymazzett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,22 +14,18 @@
 
 static void	handle_input(char *input, char ***env)
 {
-	t_command	cmd;
-	char		**array_of_words;
+	t_token		*tokens;
+	t_command	*cmds;
 
-	array_of_words = ft_split(input, ' ');
-	if (!array_of_words || !array_of_words[0])
-	{
-		if (array_of_words)
-			free_array_of_words(&array_of_words);
+	tokens = lexer(input);
+	if (!tokens)
 		return ;
-	}
-	cmd.args = array_of_words;
-	cmd.redirs = NULL;
-	cmd.next = NULL;
-	cmd.prev = NULL;
-	(void)execute(&cmd, env);
-	free_array_of_words(&array_of_words);
+	cmds = parser(&tokens);
+	free_tokens(&tokens);
+	if (!cmds)
+		return ;
+	(void)execute(cmds, env);
+	free_commands(&cmds);
 }
 
 static int	prompt_and_read(char ***env)
