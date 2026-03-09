@@ -143,7 +143,7 @@ Se for PIPE:
 - **Heredoc especial:** Precisa ler entrada do usuário até o delimitador
 
 # For Pipes
-```
+```C
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -230,6 +230,221 @@ int main() {
     waitpid(pid2, NULL, 0);
     
     printf("Pipe emulation completed successfully!\n");
+    
+    return 0;
+}
+```
+
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <errno.h>
+
+#define CHECK(condition, message) \
+    if (!(condition)) { \
+        fprintf(stderr, "Error: %s - %s\n", message, strerror(errno)); \
+        exit(EXIT_FAILURE); \
+    }
+
+int main() {
+    int pipefd[2];
+    pid_t pid1, pid2;
+    int status;
+    
+    // Step 1: Create pipe
+    CHECK(pipe(pipefd) != -1, "Failed to create pipe");
+    
+    // Step 2: Fork first child
+    pid1 = fork();
+    CHECK(pid1 != -1, "Failed to fork first child");
+    
+    if (pid1 == 0) { // First child
+        // Close unused read end
+        close(pipefd[0]);
+        
+        // Redirect stdout to pipe
+        CHECK(dup2(pipefd[1], STDOUT_FILENO) != -1, 
+              "Failed to redirect stdout");
+        
+        close(pipefd[1]); // Close original write end
+        
+        // Execute command
+        execlp("ls", "ls", "-l", NULL);
+        
+        // If we get here, exec failed
+        fprintf(stderr, "Failed to execute ls: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    
+    // Step 2: Fork second child
+    pid2 = fork();
+    CHECK(pid2 != -1, "Failed to fork second child");
+    
+    if (pid2 == 0) { // Second child
+        // Close unused write end
+        close(pipefd[1]);
+        
+        // Redirect stdin from pipe
+        CHECK(dup2(pipefd[0], STDIN_FILENO) != -1, 
+              "Failed to redirect stdin");
+        
+        close(pipefd[0]); // Close original read end
+        
+        // Execute command
+        execlp("sort", "sort", "-k5n", NULL);
+        
+        // If we get here, exec failed
+        fprintf(stderr, "Failed to execute sort: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    
+    // Parent process
+    close(pipefd[0]);
+    close(pipefd[1]);
+    
+    // Wait for children and check their exit status
+    waitpid(pid1, &status, 0);
+    if (WIFEXITED(status)) {
+        printf("First child (ls) exited with status: %d\n", 
+               WEXITSTATUS(status));
+    }
+    
+    waitpid(pid2, &status, 0);
+    if (WIFEXITED(status)) {
+        printf("Second child (sort) exited with status: %d\n", 
+               WEXITSTATUS(status));
+    }
+    
+    return 0;
+}
+```
+
+```C
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <string.h>
+
+#define MAX_COMMANDS 10
+#define MAX_ARGS 10
+
+// Structure to hold command information
+typedef struct {
+    char *cmd; // Command name (e.g., "ls")
+    char *args[MAX_ARGS]; // Arguments (e.g., ["ls", "-l", NULL])
+} command_t;
+
+void execute_pipeline(command_t commands[], int num_commands) {
+    int i;
+    int prev_pipe[2] = {-1, -1}; // Previous pipe's read end
+    pid_t pids[MAX_COMMANDS];
+    
+    for (i = 0; i < num_commands; i++) {
+        int current_pipe[2];
+        
+        // Create pipe for all except last command
+        if (i < num_commands - 1) {
+            if (pipe(current_pipe) == -1) {
+                perror("pipe");
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+        // Fork child process
+        pids[i] = fork();
+        
+        if (pids[i] == -1) {
+            perror("fork");
+            exit(EXIT_FAILURE);
+        }
+        
+        if (pids[i] == 0) { // Child process
+            // Set up input from previous pipe (if not first command)
+            if (i > 0) {
+                dup2(prev_pipe[0], STDIN_FILENO);
+                close(prev_pipe[0]);
+                close(prev_pipe[1]); // Previous pipe write end already closed in parent
+            }
+            
+            // Set up output to next pipe (if not last command)
+            if (i < num_commands - 1) {
+                close(current_pipe[0]); // Child doesn't need read end
+                dup2(current_pipe[1], STDOUT_FILENO);
+                close(current_pipe[1]);
+            }
+            
+            // Close all pipe file descriptors in child
+            // (prev_pipe already handled, current_pipe handled above)
+            
+            // Execute the command
+            execvp(commands[i].cmd, commands[i].args);
+            
+            // If we get here, exec failed
+            perror("execvp");
+            exit(EXIT_FAILURE);
+        }
+        
+        // Parent process
+        // Close previous pipe's read end (we're done with it)
+        if (i > 0) {
+            close(prev_pipe[0]);
+            close(prev_pipe[1]);
+        }
+        
+        // Save current pipe for next iteration
+        if (i < num_commands - 1) {
+            prev_pipe[0] = current_pipe[0];
+            prev_pipe[1] = current_pipe[1];
+        }
+    }
+    
+    // Parent closes last pipe if it exists
+    if (num_commands > 1) {
+        close(prev_pipe[0]);
+        close(prev_pipe[1]);
+    }
+    
+    // Wait for all children
+    for (i = 0; i < num_commands; i++) {
+        waitpid(pids[i], NULL, 0);
+    }
+}
+
+int main() {
+    // Example: ls -l | grep ".c" | sort -k5n | head -5
+    
+    command_t commands[4];
+    
+    // Command 1: ls -l
+    commands[0].cmd = "ls";
+    commands[0].args[0] = "ls";
+    commands[0].args[1] = "-l";
+    commands[0].args[2] = NULL;
+    
+    // Command 2: grep ".c"
+    commands[1].cmd = "grep";
+    commands[1].args[0] = "grep";
+    commands[1].args[1] = "\\.c";
+    commands[1].args[2] = NULL;
+    
+    // Command 3: sort -k5n
+    commands[2].cmd = "sort";
+    commands[2].args[0] = "sort";
+    commands[2].args[1] = "-k5n";
+    commands[2].args[2] = NULL;
+    
+    // Command 4: head -5
+    commands[3].cmd = "head";
+    commands[3].args[0] = "head";
+    commands[3].args[1] = "-5";
+    commands[3].args[2] = NULL;
+    
+    printf("Executing: ls -l | grep \".c\" | sort -k5n | head -5\n\n");
+    execute_pipeline(commands, 4);
     
     return 0;
 }

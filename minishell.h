@@ -21,6 +21,8 @@
 # include "libft/gnl/get_next_line.h"
 # include <readline/readline.h>
 # include <readline/history.h>
+# include <sys/wait.h>
+# include <fcntl.h>
 
 # define PROMPT	"> "
 
