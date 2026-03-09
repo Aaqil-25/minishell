@@ -141,3 +141,96 @@ Se for PIPE:
 - **Ordem importa:** `ls > out.txt | grep` é diferente de `ls | grep > out.txt`
 - **Múltiplos redirs:** `cmd < in.txt > out.txt >> log.txt` é válido
 - **Heredoc especial:** Precisa ler entrada do usuário até o delimitador
+
+# For Pipes
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+
+int main() {
+    int pipefd[2]; // Array to hold two file descriptors
+    pid_t pid1, pid2;
+    
+    // Step 1: Create the pipe
+    // pipefd[0] - read end of the pipe
+    // pipefd[1] - write end of the pipe
+    if (pipe(pipefd) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Step 2: Fork first child process (for command1)
+    pid1 = fork();
+    
+    if (pid1 == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+    
+    if (pid1 == 0) { // First child process
+        // Step 3: Redirect stdout to pipe's write end
+        // Close the read end - this child doesn't need it
+        close(pipefd[0]);
+        
+        // Redirect stdout to pipe's write end
+        // dup2 makes pipefd[1] a copy of stdout (file descriptor 1)
+        dup2(pipefd[1], STDOUT_FILENO);
+        
+        // Close the original write end - no longer needed after dup2
+        close(pipefd[1]);
+        
+        // Step 4: Execute first command
+        // Example: "ls -l"
+        execlp("ls", "ls", "-l", NULL);
+        
+        // If execlp fails
+        perror("execlp ls");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Step 2: Fork second child process (for command2)
+    pid2 = fork();
+    
+    if (pid2 == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+    
+    if (pid2 == 0) { // Second child process
+        // Step 3: Redirect stdin from pipe's read end
+        // Close the write end - this child doesn't need it
+        close(pipefd[1]);
+        
+        // Redirect stdin from pipe's read end
+        // dup2 makes pipefd[0] a copy of stdin (file descriptor 0)
+        dup2(pipefd[0], STDIN_FILENO);
+        
+        // Close the original read end - no longer needed after dup2
+        close(pipefd[0]);
+        
+        // Step 4: Execute second command
+        // Example: "sort -k5n" (sort by 5th column numerically)
+        execlp("sort", "sort", "-k5n", NULL);
+        
+        // If execlp fails
+        perror("execlp sort");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Parent process
+    // Close both pipe ends - parent doesn't use the pipe
+    close(pipefd[0]);
+    close(pipefd[1]);
+    
+    // Wait for both child processes to complete
+    waitpid(pid1, NULL, 0);
+    waitpid(pid2, NULL, 0);
+    
+    printf("Pipe emulation completed successfully!\n");
+    
+    return 0;
+}
+```
