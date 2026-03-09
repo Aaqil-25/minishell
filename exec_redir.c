@@ -25,6 +25,37 @@ static int	open_and_dup(char *file, int flags, int target)
 	return (0);
 }
 
+static int	apply_heredoc(char *delimiter)
+{
+	int		pipefd[2];
+	char	*line;
+
+	if (pipe(pipefd) < 0)
+		return (perror("pipe"), -1);
+	while (1)
+	{
+		line = readline("> ");
+		if (!line)
+			break ;
+		if (ft_strncmp(line, delimiter, ft_strlen(delimiter) + 1) == 0)
+		{
+			free(line);
+			break ;
+		}
+		ft_putstr_fd(line, pipefd[1]);
+		ft_putchar_fd('\n', pipefd[1]);
+		free(line);
+	}
+	close(pipefd[1]);
+	if (dup2(pipefd[0], STDIN_FILENO) < 0)
+	{
+		close(pipefd[0]);
+		return (perror("dup2"), -1);
+	}
+	close(pipefd[0]);
+	return (0);
+}
+
 int	exec_apply_redirections(t_command *cmd)
 {
 	t_redir	*r;
@@ -42,6 +73,9 @@ int	exec_apply_redirections(t_command *cmd)
 		if (r->type == C_REDIR_APPEND
 			&& open_and_dup(r->filename, O_WRONLY | O_CREAT | O_APPEND,
 				STDOUT_FILENO) != 0)
+			return (-1);
+		if (r->type == C_REDIR_HEREDOC
+			&& apply_heredoc(r->filename) != 0)
 			return (-1);
 		r = r->next;
 	}

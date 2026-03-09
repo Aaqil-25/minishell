@@ -15,9 +15,30 @@
 
 static int	run_builtin_cmd(t_command *cmd, char **env, int last_status)
 {
-	if (exec_apply_redirections(cmd) != 0)
-		return (1);
-	return (exec_run_builtin(cmd, &env, last_status));
+	int	saved_stdin;
+	int	saved_stdout;
+	int	status;
+
+	saved_stdin = dup(STDIN_FILENO);
+	saved_stdout = dup(STDOUT_FILENO);
+	if (saved_stdin < 0 || saved_stdout < 0)
+	{
+		if (saved_stdin >= 0)
+			close(saved_stdin);
+		if (saved_stdout >= 0)
+			close(saved_stdout);
+		return (perror("dup"), 1);
+	}
+	status = 1;
+	if (exec_apply_redirections(cmd) == 0)
+		status = exec_run_builtin(cmd, &env, last_status);
+	if (dup2(saved_stdin, STDIN_FILENO) < 0)
+		perror("dup2");
+	if (dup2(saved_stdout, STDOUT_FILENO) < 0)
+		perror("dup2");
+	close(saved_stdin);
+	close(saved_stdout);
+	return (status);
 }
 
 static int	run_external_cmd(t_command *cmd, char **env)
