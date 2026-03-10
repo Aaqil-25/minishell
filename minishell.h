@@ -23,6 +23,7 @@
 # include <readline/history.h>
 # include <sys/wait.h>
 # include <fcntl.h>
+# include <limits.h>
 
 # define PROMPT	"> "
 
@@ -75,6 +76,17 @@ void		free_tokens(t_token **head);
 t_token		*tokenize_all(char **array_of_words);
 
 /* Parser: tokens -> command list */
+int			parse_word_token(t_command *cmd, t_token **current_token);
+int			parse_command_tokens(t_command *cmd,\
+	t_token **current_token, t_redir **last_redir);
+t_command	*create_command(t_token **current_token);
+int			is_redirection(t_token_type type);
+t_redir		*add_redirection(t_redir *redir, t_redir *last_redir,\
+	t_token *op_token);
+t_redir		*parse_redirection(t_redir *redir,\
+	t_redir **last_redir, t_token **current_token);
+t_command	*init_command(void);
+void		append_command(t_command **cmds, t_command *new_cmd);
 t_command	*parser(t_token **head);
 void		free_commands(t_command **head);
 

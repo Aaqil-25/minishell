@@ -13,9 +13,13 @@ SRC = main.c \
 		loop.c \
 		token.c \
 		parsing.c \
+		parsing2.c \
+		parsing3.c \
 		utils.c \
 		tokenize.c \
 		execution.c \
+		pipeline.c \
+		pipeline2.c \
 		exec_env.c \
 		exec_redir.c \
 		exec_path.c \

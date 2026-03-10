@@ -68,89 +68,13 @@ static int	run_external_cmd(t_command *cmd, char **env)
 	return (1);
 }
 
-static int	run_single(t_command *cmd, char **env, int last_status)
+int	run_single(t_command *cmd, char **env, int last_status)
 {
 	if (!cmd->args || !cmd->args[0])
 		return (last_status);
 	if (exec_is_builtin(cmd->args[0]))
 		return (run_builtin_cmd(cmd, env, last_status));
 	return (run_external_cmd(cmd, env));
-}
-
-static int	run_pipeline(t_command *cmds, int n, char **env, int last_status)
-{
-	int			i;
-	int			prev_pipe[2];
-	pid_t		*pids;
-	t_command	*cmd;
-	int			current_pipe[2];
-
-	prev_pipe[0] = -1;
-	prev_pipe[1] = -1;
-	pids = malloc(sizeof(pid_t) * n);
-	if (!pids)
-		return (perror("malloc"), 1);
-	cmd = cmds;
-	i = 0;
-	while (i < n)
-	{
-		if (i < n - 1)
-		{
-			if (pipe(current_pipe) == -1)
-			{
-				perror("pipe");
-				exit(EXIT_FAILURE);
-			}
-		}
-		pids[i] = fork();
-		if (pids[i] == -1)
-		{
-			perror("fork");
-			exit(EXIT_FAILURE);
-		}
-		if (pids[i] == 0)
-		{
-			if (i > 0)
-			{
-				dup2(prev_pipe[0], STDIN_FILENO);
-				close(prev_pipe[0]);
-				close(prev_pipe[1]);
-			}
-			if (i < n - 1)
-			{
-				close(current_pipe[0]);
-				dup2(current_pipe[1], STDOUT_FILENO);
-				close(current_pipe[1]);
-			}
-			run_single(cmd, env, last_status);
-			exit(EXIT_FAILURE);
-		}
-		if (i > 0)
-		{
-			close(prev_pipe[0]);
-			close(prev_pipe[1]);
-		}
-		if (i < n - 1)
-		{
-			prev_pipe[0] = current_pipe[0];
-			prev_pipe[1] = current_pipe[1];
-		}
-		i++;
-		cmd = cmd->next;
-	}
-	if (n > 1)
-	{
-		close(prev_pipe[0]);
-		close(prev_pipe[1]);
-	}
-	i = 0;
-	while (i < n)
-	{
-		waitpid(pids[i], NULL, 0);
-		i++;
-	}
-	free(pids);
-	return (0);
 }
 
 int	execute(t_command *cmds, char **env)

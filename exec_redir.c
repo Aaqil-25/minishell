@@ -25,13 +25,10 @@ static int	open_and_dup(char *file, int flags, int target)
 	return (0);
 }
 
-static int	apply_heredoc(char *delimiter)
+static int	fill_heredoc_pipe(char *delimiter, int write_fd)
 {
-	int		pipefd[2];
 	char	*line;
 
-	if (pipe(pipefd) < 0)
-		return (perror("pipe"), -1);
 	while (1)
 	{
 		line = readline("> ");
@@ -42,10 +39,20 @@ static int	apply_heredoc(char *delimiter)
 			free(line);
 			break ;
 		}
-		ft_putstr_fd(line, pipefd[1]);
-		ft_putchar_fd('\n', pipefd[1]);
+		ft_putstr_fd(line, write_fd);
+		ft_putchar_fd('\n', write_fd);
 		free(line);
 	}
+	return (0);
+}
+
+static int	apply_heredoc(char *delimiter)
+{
+	int	pipefd[2];
+
+	if (pipe(pipefd) < 0)
+		return (perror("pipe"), -1);
+	fill_heredoc_pipe(delimiter, pipefd[1]);
 	close(pipefd[1]);
 	if (dup2(pipefd[0], STDIN_FILENO) < 0)
 	{
