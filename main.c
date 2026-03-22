@@ -14,10 +14,25 @@
 
 int	main(int argc, char **argv, char **envp)
 {
+	char	*line;
+	size_t	len;
+
 	(void)argc;
 	(void)argv;
 	signals_setup();
-	return (shell_loop(envp));
+	if (!isatty(STDIN_FILENO))
+	{
+		line = get_next_line(STDIN_FILENO);
+		len = ft_strlen(line);
+		line[len - 1] = '\0';
+		if (!line)
+			return (1);
+		handle_input(line, envp);
+		free(line);
+		return (0);
+	}
+	else
+		return (shell_loop(envp));
 }
 
 /*

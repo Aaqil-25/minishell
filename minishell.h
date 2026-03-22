@@ -94,6 +94,9 @@ void		free_commands(t_command **head);
 void		free_array_of_words(char ***array_of_words);
 size_t		arraylen(char **array);
 char		**append_to_array(char **array, char *new_str);
+int			prompt_and_read(char **env);
+char		*exec_get_env_value(char **env, char *name);
+void		handle_input(char *input, char **env);
 
 /* Execution returns last exit status (store it in your shell state). */
 int			execute(t_command *cmds, char **env);
