@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtin_exit.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/09 16:43:11 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/02/09 16:43:13 by mabdur-r         ###   ########.fr       */
+/*   Updated: 2026/03/24 23:13:23 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,9 @@
 
 int	builtin_exit(char **args, int last_status)
 {
-	(void)args;
+	printf("exit\n");
+	if (args[1])
+		last_status = ft_atoi(args[1]);
 	exit(last_status);
 	return (0);
 }

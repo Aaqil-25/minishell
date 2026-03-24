@@ -6,11 +6,50 @@
 /*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 17:01:15 by yurimdm           #+#    #+#             */
-/*   Updated: 2026/03/22 20:32:24 by yurimdm          ###   ########.fr       */
+/*   Updated: 2026/03/24 20:29:46 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+char	*parse_env_in_string(char **str, char **env)
+{
+	char	*env_value;
+
+	if (ft_strncmp(*str, "$?", 2) == 0)
+	{
+		env_value = ft_itoa(last_exit_status(-1));
+		free(*str);
+		*str = env_value;
+		return (*str);
+	}
+	env_value = exec_get_env_value(env, *str + 1);
+	if (!env_value)
+		env_value = "";
+	free(*str);
+	*str = ft_strdup(env_value);
+	return (*str);
+}
+
+void	parse_env_variable(t_command *cmds, char **env)
+{
+	t_command	*current_cmd;
+	int			i;
+
+	current_cmd = cmds;
+	while (current_cmd)
+	{
+		i = 0;
+		while (current_cmd->args && current_cmd->args[i])
+		{
+			if (ft_strchr(current_cmd->args[i], '$'))
+				current_cmd->args[i] = parse_env_in_string\
+(&(current_cmd->args[i]), env);
+			i++;
+		}
+		current_cmd = current_cmd->next;
+	}
+}
 
 int	parse_word_token(t_command *cmd, t_token **current_token)
 {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execution.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/09 16:46:37 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/02/09 16:46:40 by mabdur-r         ###   ########.fr       */
+/*   Updated: 2026/03/24 21:50:07 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,25 @@ static int	run_builtin_cmd(t_command *cmd, char **env, int last_status)
 		perror("dup2");
 	close(saved_stdin);
 	close(saved_stdout);
+	// printf("Builtin command exited with status: %d\n", status);
+	last_exit_status(status);
 	return (status);
+}
+
+static void external_exit_status(int status)
+{
+	if (WIFEXITED(status))
+	{
+		// printf("External command exited with status: %d\n", WEXITSTATUS(status));
+		last_exit_status(WEXITSTATUS(status));
+	}
+	else if (WIFSIGNALED(status))
+	{
+		// printf("External command terminated by signal: %d\n", WTERMSIG(status));
+		last_exit_status(128 + WTERMSIG(status));
+	}
+	// else
+	// 	printf("External command terminated with unknown status\n");
 }
 
 static int	run_external_cmd(t_command *cmd, char **env)
@@ -61,6 +79,7 @@ static int	run_external_cmd(t_command *cmd, char **env)
 	}
 	free(path);
 	waitpid(pid, &status, 0);
+	external_exit_status(status);
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
 	if (WIFSIGNALED(status))

@@ -12,27 +12,35 @@
 
 #include "minishell.h"
 
-int	main(int argc, char **argv, char **envp)
+int input_via_pipe(char **env)
 {
 	char	*line;
 	size_t	len;
+
+	while (1)
+	{
+		line = get_next_line(STDIN_FILENO);
+		if (!line)
+			return (0);
+		len = ft_strlen(line);
+		line[len - 1] = '\0';
+		handle_input(line, env);
+		free(line);
+	}
+	return (0);
+}
+
+int	main(int argc, char **argv, char **envp)
+{
 
 	(void)argc;
 	(void)argv;
 	signals_setup();
 	if (!isatty(STDIN_FILENO))
 	{
-		line = get_next_line(STDIN_FILENO);
-		len = ft_strlen(line);
-		line[len - 1] = '\0';
-		if (!line)
-			return (1);
-		handle_input(line, envp);
-		free(line);
-		return (0);
+		return (input_via_pipe(envp));
 	}
-	else
-		return (shell_loop(envp));
+	return (shell_loop(envp));
 }
 
 /*

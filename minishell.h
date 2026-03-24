@@ -89,6 +89,9 @@ t_command	*init_command(void);
 void		append_command(t_command **cmds, t_command *new_cmd);
 t_command	*parser(t_token **head);
 void		free_commands(t_command **head);
+char		*parse_env_in_string(char **str, char **env);
+void		parse_env_variable(t_command *cmds, char **env);
+int			last_exit_status(int new_status);
 
 /* Utils */
 void		free_array_of_words(char ***array_of_words);
