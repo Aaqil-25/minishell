@@ -6,12 +6,13 @@
 /*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/09 16:46:37 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/03/24 21:50:07 by yurimdm          ###   ########.fr       */
+/*   Updated: 2026/03/25 22:00:16 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "exec_internal.h"
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 static int	run_builtin_cmd(t_command *cmd, char **env, int last_status)
 {
@@ -64,10 +65,22 @@ static int	run_external_cmd(t_command *cmd, char **env)
 	pid_t	pid;
 	char	*path;
 	int		status;
+	struct stat	st;
 
 	path = exec_find_path(cmd->args[0], env);
 	if (!path)
-		return (ft_putstr_fd("minishell: command not found\n", 2), 127);
+	{
+		if (ft_strchr(cmd->args[0], '/') && stat(cmd->args[0], &st) == 0)
+		{
+			if (S_ISDIR(st.st_mode))
+				ft_putstr_fd("minishell: Is a directory\\n", 2);
+			else
+				ft_putstr_fd("minishell: Permission denied\\n", 2);
+			return (126);
+		}
+		ft_putstr_fd("minishell: command not found\\n", 2);
+		return (127);
+	}
 	pid = fork();
 	if (pid == 0)
 	{
