@@ -6,7 +6,7 @@
 /*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/10 00:21:55 by yurimdm           #+#    #+#             */
-/*   Updated: 2026/03/10 00:33:42 by yurimdm          ###   ########.fr       */
+/*   Updated: 2026/03/25 20:35:29 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,14 +56,25 @@ void	update_prev_pipe(int i, int n, int *prev, int *curr)
 	}
 }
 
-void	wait_for_all(pid_t *pids, int n)
+int	wait_for_all(pid_t *pids, int n)
 {
-	int	i;
+    int		i;
+    int		status;
+    int		last_status;
+    pid_t	wpid;
 
-	i = 0;
-	while (i < n)
-	{
-		waitpid(pids[i], NULL, 0);
-		i++;
-	}
+    i = 0;
+    last_status = 0;
+    while (i < n)
+    {
+        wpid = waitpid(pids[i], &status, 0);
+        if (wpid == pids[n - 1])
+            last_status = status;
+        i++;
+    }
+    if (WIFEXITED(last_status))
+        return (WEXITSTATUS(last_status));
+    if (WIFSIGNALED(last_status))
+        return (128 + WTERMSIG(last_status));
+    return (1);
 }

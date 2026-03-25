@@ -9,6 +9,7 @@ OBJ_DIR = ./obj
 
 SRC = main.c \
 		signals.c \
+		quotes.c \
 		term.c \
 		loop.c \
 		token.c \

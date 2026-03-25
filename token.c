@@ -17,7 +17,7 @@ t_token	*lexer(char *line)
 	char	**array_of_words;
 	t_token	*tokens;
 
-	array_of_words = ft_split(line, ' ');
+	array_of_words = wd_n_quotes_split(line);
 	if (!array_of_words || !array_of_words[0])
 	{
 		if (array_of_words)

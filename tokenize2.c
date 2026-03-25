@@ -6,45 +6,58 @@
 /*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/09 16:44:59 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/03/24 20:00:04 by yurimdm          ###   ########.fr       */
+/*   Updated: 2026/03/25 02:41:55 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static t_token	*create_token_with_quotes(char *value, t_token_type type)
+static t_token	*create_token_with_quotes(t_token *new_token, int *index)
 { // POINTER ARGUMENT IS MISSING!
-	t_token	*new_token;
-	char	*stripped_value;
+	char	*value;
+	char	quote_char;
+	int		i;
 
-	stripped_value = strip_quotes(value);
-	if (!stripped_value)
-		return (NULL);
-	new_token = malloc(sizeof(t_token));
-	if (!new_token)
+	quote_char = new_token->value[0];
+	value = ft_strtrim(new_token->value, &quote_char);
+	free(new_token->value);
+	new_token->value = value;
+	i = 0;
+	while (!ft_strchr(new_token->value, quote_char))
 	{
-		free(stripped_value);
+		(*index)++;
+		i++;
+		if (!new_token->value)
+		{
+			free(new_token);
+			return (NULL);
+		}
+		value = ft_strjoin(new_token->value, " ");
+		free(new_token->value);
+		new_token->value = value;
+		value = ft_strjoin(new_token->value, new_token[i].value);
+	}
+	if (!new_token->value)
+	{
+		free(new_token);
 		return (NULL);
 	}
-	new_token->value = stripped_value;
-	new_token->type = type;
-	new_token->next = NULL;
 	return (new_token);
 }
 
-static t_token	*create_token(char *value, t_token_type type)
+static t_token	*create_token(char *value, t_token_type type, int *index)
 {
 	t_token	*new_token;
 
 	if (!value)
 		return (NULL);
-	if (type == WORD && (value[0] == '"' || value[0] == '\''))
-		return (create_token_with_quotes(value, type));
 	new_token = malloc(sizeof(t_token));
 	if (!new_token)
 		return (NULL);
-	new_token->value = ft_strdup(value);
 	new_token->type = type;
+	if (type == WORD && (value[0] == '"' || value[0] == '\''))
+		return (create_token_with_quotes(new_token, index));
+	new_token->value = ft_strdup(value);
 	new_token->next = NULL;
 	return (new_token);
 }
@@ -85,7 +98,7 @@ t_token	*tokenize_all(char **array_of_words)
 	while (array_of_words[i])
 	{
 		new_token = create_token(array_of_words[i],
-				get_token_type(array_of_words[i]));
+				get_token_type(array_of_words[i]), &i);
 		if (!new_token)
 			return (head);
 		current->next = new_token;

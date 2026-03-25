@@ -72,6 +72,7 @@ static volatile sig_atomic_t	g_signal = 0;
 
 /* Token / lexer */
 t_token		*lexer(char *line);
+char		**wd_n_quotes_split(char const *s);
 void		free_tokens(t_token **head);
 t_token		*tokenize_all(char **array_of_words);
 

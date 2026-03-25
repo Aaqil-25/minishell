@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_internal.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
+/*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/09 16:48:39 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/02/09 16:48:41 by mabdur-r         ###   ########.fr       */
+/*   Updated: 2026/03/25 20:38:10 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ pid_t	*allocate_pids(int n);
 void	close_pipe_ends(int fd0, int fd1);
 void	setup_child_redirections(int i, int n, int *prev, int *curr);
 void	update_prev_pipe(int i, int n, int *prev, int *curr);
-void	wait_for_all(pid_t *pids, int n);
+int		wait_for_all(pid_t *pids, int n);
 void	create_next_pipe(int i, int n, int *pipefd);
 pid_t	fork_child(t_child_process_params params, char **env, int last);
 
