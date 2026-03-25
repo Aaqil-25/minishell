@@ -8,17 +8,26 @@ RM = rm -f
 OBJ_DIR = ./obj
 
 SRC = main.c \
+		input_pipe.c \
 		signals.c \
-		quotes.c \
+		quotes_token.c \
+		quotes_split.c \
 		term.c \
 		loop.c \
 		token.c \
 		parsing.c \
-		parsing2.c \
-		parsing3.c \
+		parse_exit_status.c \
+		parse_redir.c \
+		parse_cmd_init.c \
+		parse_env_part.c \
+		parse_env_expand.c \
+		parse_env_args.c \
+		parse_command_create.c \
 		utils.c \
 		tokenize.c \
 		execution.c \
+		execution_builtin.c \
+		execution_ext.c \
 		pipeline.c \
 		pipeline2.c \
 		exec_env.c \

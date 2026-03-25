@@ -1,33 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   builtin_cd.c                                       :+:      :+:    :+:   */
+/*   parse_cmd_init.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/09 16:42:39 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/03/25 22:17:12 by yurimdm          ###   ########.fr       */
+/*   Created: 2026/03/10 17:01:43 by yurimdm           #+#    #+#             */
+/*   Updated: 2026/03/25 21:02:33 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	builtin_cd(char **args)
+t_command	*init_command(void)
 {
-	char	*home;
+	t_command	*cmd;
 
-	if (args[1] && args[2])
-		return (ft_putstr_fd("minishell: cd: too many arguments\n", 2), 1);
-	if (!args[1])
-	{
-		home = getenv("HOME");
-		if (!home)
-			return (ft_putstr_fd("minishell: cd: HOME not set\n", 2), 1);
-		if (chdir(home) != 0)
-			return (perror("cd"), 1);
-		return (0);
-	}
-	if (chdir(args[1]) != 0)
-		return (perror(args[1]), 1);
-	return (0);
+	cmd = malloc(sizeof(t_command));
+	if (!cmd)
+		return (NULL);
+	cmd->args = NULL;
+	cmd->redirs = NULL;
+	cmd->next = NULL;
+	cmd->prev = NULL;
+	return (cmd);
 }

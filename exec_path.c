@@ -47,9 +47,9 @@ static char	*search_in_path(char **dirs, char *name)
 
 char	*exec_find_path(char *name, char **env)
 {
-	char	*path_env;
-	char	**dirs;
-	char	*found;
+	char		*path_env;
+	char		**dirs;
+	char		*found;
 	struct stat	st;
 
 	if (!name || !name[0])

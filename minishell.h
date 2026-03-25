@@ -68,10 +68,13 @@ typedef struct s_command
 }	t_command;
 
 /* Signal: subject allows one global (signal number only). */
-static volatile sig_atomic_t	g_signal = 0;
+extern volatile sig_atomic_t	g_signal;
 
 /* Token / lexer */
 t_token		*lexer(char *line);
+int			is_separator(char c);
+int			is_quote(char c);
+int			quotes_token_len(const char *s, int i);
 char		**wd_n_quotes_split(char const *s);
 void		free_tokens(t_token **head);
 t_token		*tokenize_all(char **array_of_words);
@@ -90,6 +93,8 @@ t_command	*init_command(void);
 void		append_command(t_command **cmds, t_command *new_cmd);
 t_command	*parser(t_token **head);
 void		free_commands(t_command **head);
+char		*env_append_part(char *base, const char *part, size_t part_len);
+char		*env_substitute(const char *s, size_t *i, char **env);
 char		*parse_env_in_string(char **str, char **env);
 void		parse_env_variable(t_command *cmds, char **env);
 int			last_exit_status(int new_status);
@@ -99,6 +104,7 @@ void		free_array_of_words(char ***array_of_words);
 size_t		arraylen(char **array);
 char		**append_to_array(char **array, char *new_str);
 int			prompt_and_read(char **env);
+int			input_via_pipe(char **env);
 char		*exec_get_env_value(char **env, char *name);
 void		handle_input(char *input, char **env);
 

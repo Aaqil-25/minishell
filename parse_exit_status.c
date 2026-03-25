@@ -1,33 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   builtin_cd.c                                       :+:      :+:    :+:   */
+/*   parse_exit_status.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/09 16:42:39 by mabdur-r          #+#    #+#             */
-/*   Updated: 2026/03/25 22:17:12 by yurimdm          ###   ########.fr       */
+/*   Created: 2026/03/10 17:01:43 by yurimdm           #+#    #+#             */
+/*   Updated: 2026/03/25 21:02:33 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	builtin_cd(char **args)
+int	last_exit_status(int new_status)
 {
-	char	*home;
+	static int	status = 0;
 
-	if (args[1] && args[2])
-		return (ft_putstr_fd("minishell: cd: too many arguments\n", 2), 1);
-	if (!args[1])
-	{
-		home = getenv("HOME");
-		if (!home)
-			return (ft_putstr_fd("minishell: cd: HOME not set\n", 2), 1);
-		if (chdir(home) != 0)
-			return (perror("cd"), 1);
-		return (0);
-	}
-	if (chdir(args[1]) != 0)
-		return (perror(args[1]), 1);
-	return (0);
+	if (new_status != -1)
+		status = new_status;
+	return (status);
+}
+
+int	is_redirection(t_token_type type)
+{
+	return (type == REDIR_IN || type == REDIR_OUT
+		|| type == APPEND || type == HEREDOC);
 }

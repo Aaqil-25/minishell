@@ -15,7 +15,7 @@
 
 # include "minishell.h"
 
-typedef struct child_process_params
+typedef struct s_child_process_params
 {
 	t_command	*cmd;
 	int			i;
@@ -32,7 +32,9 @@ int		exec_run_builtin(t_command *cmd, char ***env, int last_status);
 int		run_single(t_command *cmd, char **env, int last_status);
 int		run_pipeline(t_command *cmds, int n, char **env, int last_status);
 
-// Pipeline helpers
+int		run_builtin_cmd(t_command *cmd, char **env, int last_status);
+int		run_external_cmd(t_command *cmd, char **env);
+void	external_exit_status(int status);
 
 pid_t	*allocate_pids(int n);
 void	close_pipe_ends(int fd0, int fd1);
