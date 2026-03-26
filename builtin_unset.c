@@ -1,23 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   builtin_unset.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/13 17:58:34 by ymazzett          #+#    #+#             */
-/*   Updated: 2025/10/08 14:55:17 by codespace        ###   ########.fr       */
+/*   Created: 2026/02/09 16:48:58 by mabdur-r          #+#    #+#             */
+/*   Updated: 2026/02/09 16:48:59 by mabdur-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	main(int argc, char **argv, char **envp)
+int	builtin_unset(char **args, char ***env)
 {
-	(void)argc;
-	(void)argv;
-	signals_setup();
-	if (!isatty(STDIN_FILENO))
-		return (input_via_pipe(envp));
-	return (shell_loop(envp));
+	(void)args;
+	(void)env;
+	return (0);
 }

@@ -1,23 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   builtin_pwd.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: mabdur-r <mabdur-r@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/13 17:58:34 by ymazzett          #+#    #+#             */
-/*   Updated: 2025/10/08 14:55:17 by codespace        ###   ########.fr       */
+/*   Created: 2026/02/09 16:43:39 by mabdur-r          #+#    #+#             */
+/*   Updated: 2026/02/09 16:43:44 by mabdur-r         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <limits.h>
 
-int	main(int argc, char **argv, char **envp)
+int	builtin_pwd(char **args)
 {
-	(void)argc;
-	(void)argv;
-	signals_setup();
-	if (!isatty(STDIN_FILENO))
-		return (input_via_pipe(envp));
-	return (shell_loop(envp));
+	char	buf[PATH_MAX];
+
+	(void)args;
+	if (getcwd(buf, sizeof(buf)) == NULL)
+		return (perror("pwd"), 1);
+	ft_putendl_fd(buf, 1);
+	return (0);
 }

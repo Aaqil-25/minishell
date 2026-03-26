@@ -1,23 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   parse_cmd_init.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/13 17:58:34 by ymazzett          #+#    #+#             */
-/*   Updated: 2025/10/08 14:55:17 by codespace        ###   ########.fr       */
+/*   Created: 2026/03/10 17:01:43 by yurimdm           #+#    #+#             */
+/*   Updated: 2026/03/25 21:02:33 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	main(int argc, char **argv, char **envp)
+t_command	*init_command(void)
 {
-	(void)argc;
-	(void)argv;
-	signals_setup();
-	if (!isatty(STDIN_FILENO))
-		return (input_via_pipe(envp));
-	return (shell_loop(envp));
+	t_command	*cmd;
+
+	cmd = malloc(sizeof(t_command));
+	if (!cmd)
+		return (NULL);
+	cmd->args = NULL;
+	cmd->redirs = NULL;
+	cmd->next = NULL;
+	cmd->prev = NULL;
+	return (cmd);
 }

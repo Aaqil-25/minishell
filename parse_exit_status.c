@@ -1,23 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   parse_exit_status.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/13 17:58:34 by ymazzett          #+#    #+#             */
-/*   Updated: 2025/10/08 14:55:17 by codespace        ###   ########.fr       */
+/*   Created: 2026/03/10 17:01:43 by yurimdm           #+#    #+#             */
+/*   Updated: 2026/03/25 21:02:33 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	main(int argc, char **argv, char **envp)
+int	last_exit_status(int new_status)
 {
-	(void)argc;
-	(void)argv;
-	signals_setup();
-	if (!isatty(STDIN_FILENO))
-		return (input_via_pipe(envp));
-	return (shell_loop(envp));
+	static int	status = 0;
+
+	if (new_status != -1)
+		status = new_status;
+	return (status);
+}
+
+int	is_redirection(t_token_type type)
+{
+	return (type == REDIR_IN || type == REDIR_OUT
+		|| type == APPEND || type == HEREDOC);
 }
