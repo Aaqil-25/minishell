@@ -26,16 +26,21 @@ static void	try_execve_child(t_command *cmd, char **env, char *path)
 static int	report_path_errors(t_command *cmd)
 {
 	struct stat	st;
+	char		*tmp;
 
 	if (ft_strchr(cmd->args[0], '/') && stat(cmd->args[0], &st) == 0)
 	{
 		if (S_ISDIR(st.st_mode))
-			ft_putstr_fd("minishell: Is a directory\\n", 2);
+			tmp = ft_strjoin(cmd->args[0], ": Is a directory\n");
 		else
-			ft_putstr_fd("minishell: Permission denied\\n", 2);
+			tmp = ft_strjoin(cmd->args[0], ": Permission denied\n");
+		ft_putstr_fd(tmp, 2);
+		free(tmp);
 		return (126);
 	}
-	ft_putstr_fd("minishell: command not found\\n", 2);
+	tmp = ft_strjoin(cmd->args[0], ": command not found\n");
+	ft_putstr_fd(tmp, 2);
+	free(tmp);
 	return (127);
 }
 
