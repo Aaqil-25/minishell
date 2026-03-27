@@ -38,7 +38,7 @@ static void	restore_std_streams(int in, int out)
 	close(out);
 }
 
-int	run_builtin_cmd(t_command *cmd, char **env, int last_status)
+int	run_builtin_cmd(t_command *cmd, char ***env, int last_status)
 {
 	int	saved_stdin;
 	int	saved_stdout;
@@ -47,8 +47,8 @@ int	run_builtin_cmd(t_command *cmd, char **env, int last_status)
 	if (save_std_streams(&saved_stdin, &saved_stdout) < 0)
 		return (1);
 	status = 1;
-	if (exec_apply_redirections(cmd) == 0)
-		status = exec_run_builtin(cmd, &env, last_status);
+	if (exec_apply_redirections(cmd, *env) == 0)
+		status = exec_run_builtin(cmd, env, last_status);
 	restore_std_streams(saved_stdin, saved_stdout);
 	last_exit_status(status);
 	return (status);

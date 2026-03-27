@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "exec_internal.h"
+#include <errno.h>
 
 pid_t	*allocate_pids(int n)
 {
@@ -68,6 +69,8 @@ int	wait_for_all(pid_t *pids, int n)
 	while (i < n)
 	{
 		wpid = waitpid(pids[i], &status, 0);
+		while (wpid < 0 && errno == EINTR)
+			wpid = waitpid(pids[i], &status, 0);
 		if (wpid == pids[n - 1])
 			last_status = status;
 		i++;

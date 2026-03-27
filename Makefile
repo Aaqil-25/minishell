@@ -9,6 +9,7 @@ OBJ_DIR = ./obj
 
 SRC = main.c \
 		input_pipe.c \
+		input_quotes.c \
 		signals.c \
 		quotes_token.c \
 		quotes_split.c \
@@ -22,7 +23,9 @@ SRC = main.c \
 		parse_env_part.c \
 		parse_env_expand.c \
 		parse_env_args.c \
+		parse_env_variable.c \
 		parse_command_create.c \
+		env_bootstrap.c \
 		utils.c \
 		tokenize.c \
 		execution.c \
@@ -39,6 +42,9 @@ SRC = main.c \
 		builtin_pwd.c \
 		builtin_env.c \
 		builtin_export.c \
+		export_core.c \
+		export_mutate.c \
+		export_print.c \
 		builtin_unset.c \
 		builtin_exit.c \
 		libft/gnl/get_next_line.c libft/gnl/get_next_line_utils.c \

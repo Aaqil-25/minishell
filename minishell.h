@@ -25,7 +25,7 @@
 # include <fcntl.h>
 # include <limits.h>
 
-# define PROMPT	"> "
+# define PROMPT	"minishell > "
 
 typedef enum e_token_type
 {
@@ -103,13 +103,15 @@ int			last_exit_status(int new_status);
 void		free_array_of_words(char ***array_of_words);
 size_t		arraylen(char **array);
 char		**append_to_array(char **array, char *new_str);
-int			prompt_and_read(char **env);
-int			input_via_pipe(char **env);
+int			prompt_and_read(char ***env);
+int			input_via_pipe(char ***env);
 char		*exec_get_env_value(char **env, char *name);
-void		handle_input(char *input, char **env);
+void		handle_input(char *input, char ***env);
+int			has_unclosed_quotes(const char *str);
+void		init_default_env(char ***env);
 
 /* Execution returns last exit status (store it in your shell state). */
-int			execute(t_command *cmds, char **env);
+int			execute(t_command *cmds, char ***env);
 
 /* Builtins: return exit status. env only for export/unset/env. */
 int			builtin_echo(char **args);
@@ -120,10 +122,22 @@ int			builtin_unset(char **args, char ***env);
 int			builtin_env(char **args, char **env);
 int			builtin_exit(char **args, int last_status);
 
+/* Export helper function for unset */
+void		remove_export_only(char *name);
+char		**export_only_store(char **new_value, int set);
+int			export_key_len(char *s);
+int			export_array_count(char **arr);
+int			export_is_same_key(char *entry, char *arg);
+char		**export_clone_with_append(char **src, char *extra);
+int			export_has_name(char **arr, char *name);
+int			export_set_assignment(char *arg, char ***env);
+int			add_export_only(char *arg, char **env);
+void		print_export_all(char **env);
+
 /* --------------------tmp functions------------------------------ */
 /* Interactive shell helpers */
 void		signals_setup(void);
 void		term_apply(int prompt_mode);
-int			shell_loop(char **env);
+int			shell_loop(char ***env);
 
 #endif

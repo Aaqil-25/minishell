@@ -50,7 +50,7 @@ static char	*arg_append_one_char(char *new_arg, char *arg, size_t *i)
 	return (new_arg);
 }
 
-static char	*parse_arg_by_quote(char *arg, char **env)
+char	*parse_arg_by_quote(char *arg, char **env)
 {
 	char	*new_arg;
 	char	quote;
@@ -77,28 +77,4 @@ static char	*parse_arg_by_quote(char *arg, char **env)
 			return (NULL);
 	}
 	return (new_arg);
-}
-
-void	parse_env_variable(t_command *cmds, char **env)
-{
-	t_command	*current_cmd;
-	char		*new_arg;
-	int			i;
-
-	current_cmd = cmds;
-	while (current_cmd)
-	{
-		i = 0;
-		while (current_cmd->args && current_cmd->args[i])
-		{
-			new_arg = parse_arg_by_quote(current_cmd->args[i], env);
-			if (new_arg)
-			{
-				free(current_cmd->args[i]);
-				current_cmd->args[i] = new_arg;
-			}
-			i++;
-		}
-		current_cmd = current_cmd->next;
-	}
 }

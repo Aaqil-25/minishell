@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 
-void	handle_input(char *input, char **env)
+void	handle_input(char *input, char ***env)
 {
 	t_token		*tokens;
 	t_command	*cmds;
@@ -24,29 +24,57 @@ void	handle_input(char *input, char **env)
 	free_tokens(&tokens);
 	if (!cmds)
 		return ;
-	parse_env_variable(cmds, env);
+	parse_env_variable(cmds, *env);
 	(void)execute(cmds, env);
 	free_commands(&cmds);
 }
 
-int	prompt_and_read(char **env)
+static char	*build_prompt(char **env)
+{
+	char	*username;
+	char	*prompt;
+
+	username = exec_get_env_value(env, "USER");
+	if (username)
+	{
+		username = ft_strjoin(username, "@");
+		prompt = ft_strjoin(username, PROMPT);
+		free(username);
+	}
+	else
+		prompt = ft_strdup(PROMPT);
+	return (prompt);
+}
+
+int	prompt_and_read(char ***env)
 {
 	char	*line;
+	char	*prompt;
+	char	*cont;
+	char	*tmp;
 
-	term_apply(1);
-	g_signal = 0;
-	line = readline(PROMPT);
-	term_apply(0);
+	prompt = build_prompt(*env);
+	(term_apply(1), g_signal = 0);
+	line = readline(prompt);
+	(term_apply(0), free(prompt));
 	if (!line)
 		return (1);
+	while (has_unclosed_quotes(line))
+	{
+		cont = readline("> ");
+		if (!cont)
+			return ((void)free(line), 1);
+		tmp = line;
+		line = ft_strjoin(ft_strjoin(tmp, "\n"), cont);
+		(free(tmp), free(cont));
+	}
 	if (g_signal != SIGINT && line[0] != '\0')
 		add_history(line);
-	handle_input(line, env);
-	free(line);
+	(handle_input(line, env), free(line));
 	return (0);
 }
 
-int	shell_loop(char **env)
+int	shell_loop(char ***env)
 {
 	int	error;
 
