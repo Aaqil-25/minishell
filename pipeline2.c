@@ -71,11 +71,6 @@ int	wait_for_all(pid_t *pids, int n)
 		wpid = waitpid(pids[i], &status, 0);
 		while (wpid < 0 && errno == EINTR)
 			wpid = waitpid(pids[i], &status, 0);
-		if (wpid < 0)
-		{
-			i++;
-			continue ;
-		}
 		if (wpid == pids[n - 1])
 			last_status = status;
 		i++;

@@ -25,7 +25,7 @@ static int	open_and_dup(char *file, int flags, int target)
 	return (0);
 }
 
-static int	fill_heredoc_pipe(char *delimiter, int write_fd)
+static int	fill_heredoc_pipe(char *delimiter, int write_fd, char **env)
 {
 	char	*line;
 
@@ -39,6 +39,7 @@ static int	fill_heredoc_pipe(char *delimiter, int write_fd)
 			free(line);
 			break ;
 		}
+		parse_env_in_string(&line, env);
 		ft_putstr_fd(line, write_fd);
 		ft_putchar_fd('\n', write_fd);
 		free(line);
@@ -46,13 +47,13 @@ static int	fill_heredoc_pipe(char *delimiter, int write_fd)
 	return (0);
 }
 
-static int	apply_heredoc(char *delimiter)
+static int	apply_heredoc(char *delimiter, char **env)
 {
 	int	pipefd[2];
 
 	if (pipe(pipefd) < 0)
 		return (perror("pipe"), -1);
-	fill_heredoc_pipe(delimiter, pipefd[1]);
+	fill_heredoc_pipe(delimiter, pipefd[1], env);
 	close(pipefd[1]);
 	if (dup2(pipefd[0], STDIN_FILENO) < 0)
 	{
@@ -63,7 +64,7 @@ static int	apply_heredoc(char *delimiter)
 	return (0);
 }
 
-int	exec_apply_redirections(t_command *cmd)
+int	exec_apply_redirections(t_command *cmd, char **env)
 {
 	t_redir	*r;
 
@@ -82,7 +83,7 @@ int	exec_apply_redirections(t_command *cmd)
 				STDOUT_FILENO) != 0)
 			return (-1);
 		if (r->type == C_REDIR_HEREDOC
-			&& apply_heredoc(r->filename) != 0)
+			&& apply_heredoc(r->filename, env) != 0)
 			return (-1);
 		r = r->next;
 	}

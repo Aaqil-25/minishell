@@ -24,7 +24,7 @@ typedef struct s_child_process_params
 	int			curr[2];
 }	t_child_process_params;
 
-int		exec_apply_redirections(t_command *cmd);
+int		exec_apply_redirections(t_command *cmd, char **env);
 char	*exec_get_env_value(char **env, char *name);
 char	*exec_find_path(char *name, char **env);
 int		exec_is_builtin(char *name);

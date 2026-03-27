@@ -15,13 +15,34 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+static void	report_execve_error(char *name)
+{
+	struct stat	st;
+
+	if (stat(name, &st) == 0 && S_ISDIR(st.st_mode))
+	{
+		ft_putstr_fd(name, 2);
+		ft_putstr_fd(": Is a directory\n", 2);
+		exit(126);
+	}
+	if (errno == EACCES)
+	{
+		ft_putstr_fd(name, 2);
+		ft_putstr_fd(": Permission denied\n", 2);
+		exit(126);
+	}
+	perror(name);
+	if (errno == ENOENT)
+		exit(127);
+	exit(126);
+}
+
 static void	try_execve_child(t_command *cmd, char **env, char *path)
 {
-	if (exec_apply_redirections(cmd) != 0)
+	if (exec_apply_redirections(cmd, env) != 0)
 		exit(1);
 	execve(path, cmd->args, env);
-	perror(cmd->args[0]);
-	exit(127);
+	report_execve_error(cmd->args[0]);
 }
 
 static int	report_path_errors(t_command *cmd)

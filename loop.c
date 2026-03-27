@@ -50,19 +50,27 @@ int	prompt_and_read(char ***env)
 {
 	char	*line;
 	char	*prompt;
+	char	*cont;
+	char	*tmp;
 
 	prompt = build_prompt(*env);
-	term_apply(1);
-	g_signal = 0;
+	(term_apply(1), g_signal = 0);
 	line = readline(prompt);
-	term_apply(0);
-	free(prompt);
+	(term_apply(0), free(prompt));
 	if (!line)
 		return (1);
+	while (has_unclosed_quotes(line))
+	{
+		cont = readline("> ");
+		if (!cont)
+			return ((void)free(line), 1);
+		tmp = line;
+		line = ft_strjoin(ft_strjoin(tmp, "\n"), cont);
+		(free(tmp), free(cont));
+	}
 	if (g_signal != SIGINT && line[0] != '\0')
 		add_history(line);
-	handle_input(line, env);
-	free(line);
+	(handle_input(line, env), free(line));
 	return (0);
 }
 

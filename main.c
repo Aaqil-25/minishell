@@ -11,13 +11,24 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <errno.h>
 
-static int	env_key_match(char *entry, char *key)
+static char	*build_env_entry(char *key, int value)
 {
-	size_t	len;
+	char	*num;
+	char	*tmp;
+	char	*entry;
 
-	len = ft_strlen(key);
-	return (ft_strncmp(entry, key, len) == 0 && entry[len] == '=');
+	num = ft_itoa(value);
+	if (!num)
+		return (NULL);
+	tmp = ft_strjoin(key, "=");
+	if (!tmp)
+		return (free(num), NULL);
+	entry = ft_strjoin(tmp, num);
+	free(num);
+	free(tmp);
+	return (entry);
 }
 
 static char	**dup_env(char **envp)
@@ -41,27 +52,19 @@ static char	**dup_env(char **envp)
 
 static int	set_env_var(char ***env, char *key, int value)
 {
-	char	*num;
-	char	*tmp;
 	char	*entry;
+	size_t	len;
 	char	**new_env;
 	int		i;
 
-	num = ft_itoa(value);
-	if (!num)
-		return (0);
-	tmp = ft_strjoin(key, "=");
-	if (!tmp)
-		return (free(num), 0);
-	entry = ft_strjoin(tmp, num);
-	free(num);
-	free(tmp);
+	entry = build_env_entry(key, value);
 	if (!entry)
 		return (0);
+	len = ft_strlen(key);
 	i = 0;
 	while ((*env)[i])
 	{
-		if (env_key_match((*env)[i], key))
+		if (ft_strncmp((*env)[i], key, len) == 0 && (*env)[i][len] == '=')
 			return (free((*env)[i]), (*env)[i] = entry, 1);
 		i++;
 	}
@@ -76,21 +79,27 @@ static int	set_env_var(char ***env, char *key, int value)
 static void	init_shlvl(char ***env)
 {
 	char	*val;
+	char	*end;
 	long	lvl;
+	long	next;
 
 	val = exec_get_env_value(*env, "SHLVL");
 	if (!val)
-		set_env_var(env, "SHLVL", 1);
-	else
+		return ((void)set_env_var(env, "SHLVL", 1));
+	errno = 0;
+	lvl = strtol(val, &end, 10);
+	if (!val[0] || *end != '\0' || errno == ERANGE)
+		return ((void)set_env_var(env, "SHLVL", 1));
+	if (lvl < 0)
+		return ((void)set_env_var(env, "SHLVL", 0));
+	next = lvl + 1;
+	if (next >= 1000)
 	{
-		lvl = ft_atoi(val);
-		if (lvl < 0)
-			set_env_var(env, "SHLVL", 0);
-		else if (lvl >= 1000)
-			set_env_var(env, "SHLVL", 1);
-		else
-			set_env_var(env, "SHLVL", (int)(lvl + 1));
+		fprintf(stderr, "minishell: warning: shell level (%ld) ", next);
+		fprintf(stderr, "too high, resetting to 1\n");
+		return ((void)set_env_var(env, "SHLVL", 1));
 	}
+	set_env_var(env, "SHLVL", (int)next);
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -104,6 +113,7 @@ int	main(int argc, char **argv, char **envp)
 	if (!env)
 		return (1);
 	init_shlvl(&env);
+	init_default_env(&env);
 	signals_setup();
 	if (!isatty(STDIN_FILENO))
 		status = input_via_pipe(&env);

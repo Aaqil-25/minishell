@@ -24,6 +24,7 @@ void	create_next_pipe(int i, int n, int *pipefd)
 pid_t	fork_child(t_child_process_params params, char **env, int last)
 {
 	pid_t	pid;
+	char	**env_ref;
 
 	pid = fork();
 	if (pid == -1)
@@ -33,8 +34,6 @@ pid_t	fork_child(t_child_process_params params, char **env, int last)
 	}
 	if (pid == 0)
 	{
-		char	**env_ref;
-
 		env_ref = env;
 		setup_child_redirections(params.i, params.n, params.prev, params.curr);
 		exit(run_single(params.cmd, &env_ref, last));
