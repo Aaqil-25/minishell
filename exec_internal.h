@@ -29,10 +29,10 @@ char	*exec_get_env_value(char **env, char *name);
 char	*exec_find_path(char *name, char **env);
 int		exec_is_builtin(char *name);
 int		exec_run_builtin(t_command *cmd, char ***env, int last_status);
-int		run_single(t_command *cmd, char **env, int last_status);
+int		run_single(t_command *cmd, char ***env, int last_status);
 int		run_pipeline(t_command *cmds, int n, char **env, int last_status);
 
-int		run_builtin_cmd(t_command *cmd, char **env, int last_status);
+int		run_builtin_cmd(t_command *cmd, char ***env, int last_status);
 int		run_external_cmd(t_command *cmd, char **env);
 void	external_exit_status(int status);
 

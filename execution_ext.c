@@ -13,6 +13,7 @@
 #include "exec_internal.h"
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 static void	try_execve_child(t_command *cmd, char **env, char *path)
 {
@@ -49,6 +50,7 @@ int	run_external_cmd(t_command *cmd, char **env)
 	pid_t	pid;
 	char	*path;
 	int		status;
+	pid_t	wpid;
 
 	path = exec_find_path(cmd->args[0], env);
 	if (!path)
@@ -57,7 +59,11 @@ int	run_external_cmd(t_command *cmd, char **env)
 	if (pid == 0)
 		try_execve_child(cmd, env, path);
 	free(path);
-	waitpid(pid, &status, 0);
+	wpid = waitpid(pid, &status, 0);
+	while (wpid < 0 && errno == EINTR)
+		wpid = waitpid(pid, &status, 0);
+	if (wpid < 0)
+		return (perror("waitpid"), 1);
 	external_exit_status(status);
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));

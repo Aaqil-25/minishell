@@ -33,8 +33,11 @@ pid_t	fork_child(t_child_process_params params, char **env, int last)
 	}
 	if (pid == 0)
 	{
+		char	**env_ref;
+
+		env_ref = env;
 		setup_child_redirections(params.i, params.n, params.prev, params.curr);
-		exit(run_single(params.cmd, env, last));
+		exit(run_single(params.cmd, &env_ref, last));
 	}
 	return (pid);
 }

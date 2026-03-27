@@ -74,5 +74,10 @@ char	*env_substitute(const char *s, size_t *i, char **env)
 {
 	if (s[*i + 1] == '?')
 		return (substitute_exit_code(i));
+	if (ft_isdigit(s[*i + 1]))
+	{
+		*i += 2;
+		return (ft_strdup(""));
+	}
 	return (substitute_env_name(s, i, env));
 }

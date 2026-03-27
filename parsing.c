@@ -46,6 +46,7 @@ static int	advance_after_pipe(t_token **current_token)
 	if (!(*current_token)->next || (*current_token)->next->type == PIPE)
 	{
 		ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
+		last_exit_status(2);
 		return (0);
 	}
 	*current_token = (*current_token)->next;

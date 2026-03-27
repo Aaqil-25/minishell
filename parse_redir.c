@@ -71,6 +71,7 @@ t_redir	*add_redirection(t_redir *redir, t_redir *last_redir,
 	if (!target || target->type != WORD)
 	{
 		ft_putstr_fd("minishell: syntax error near redirection\n", 2);
+		last_exit_status(2);
 		return (NULL);
 	}
 	current_redir = malloc(sizeof(t_redir));

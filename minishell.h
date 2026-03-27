@@ -25,7 +25,7 @@
 # include <fcntl.h>
 # include <limits.h>
 
-# define PROMPT	"> "
+# define PROMPT	"minishell > "
 
 typedef enum e_token_type
 {
@@ -103,13 +103,13 @@ int			last_exit_status(int new_status);
 void		free_array_of_words(char ***array_of_words);
 size_t		arraylen(char **array);
 char		**append_to_array(char **array, char *new_str);
-int			prompt_and_read(char **env);
-int			input_via_pipe(char **env);
+int			prompt_and_read(char ***env);
+int			input_via_pipe(char ***env);
 char		*exec_get_env_value(char **env, char *name);
-void		handle_input(char *input, char **env);
+void		handle_input(char *input, char ***env);
 
 /* Execution returns last exit status (store it in your shell state). */
-int			execute(t_command *cmds, char **env);
+int			execute(t_command *cmds, char ***env);
 
 /* Builtins: return exit status. env only for export/unset/env. */
 int			builtin_echo(char **args);
@@ -124,6 +124,6 @@ int			builtin_exit(char **args, int last_status);
 /* Interactive shell helpers */
 void		signals_setup(void);
 void		term_apply(int prompt_mode);
-int			shell_loop(char **env);
+int			shell_loop(char ***env);
 
 #endif

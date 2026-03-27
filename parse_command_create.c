@@ -64,6 +64,7 @@ t_command	*create_command(t_token **current_token)
 	if (!cmd->args && !cmd->redirs)
 	{
 		ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
+		last_exit_status(2);
 		return (free_commands(&cmd), NULL);
 	}
 	return (cmd);

@@ -57,7 +57,7 @@ static char	*read_stdin_line(void)
 	return (line);
 }
 
-int	input_via_pipe(char **env)
+int	input_via_pipe(char ***env)
 {
 	char	*line;
 
