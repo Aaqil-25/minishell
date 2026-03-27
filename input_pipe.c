@@ -64,7 +64,7 @@ int	input_via_pipe(char ***env)
 	line = read_stdin_line();
 	if (!line)
 		return (last_exit_status(-1));
-	handle_input(line, env);
+	(void)handle_input(line, env);
 	free(line);
 	return (last_exit_status(-1));
 }

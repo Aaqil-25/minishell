@@ -12,6 +12,15 @@
 
 #include "minishell.h"
 
+int	builtin_exit_requested(int set_value)
+{
+	static int	requested;
+
+	if (set_value >= 0)
+		requested = set_value;
+	return (requested);
+}
+
 static int	is_valid_exit_arg(char *s)
 {
 	int	i;
@@ -32,20 +41,31 @@ static int	is_valid_exit_arg(char *s)
 
 int	builtin_exit(char **args, int last_status)
 {
+	int	exit_code;
+
+	builtin_exit_requested(0);
 	if (isatty(STDIN_FILENO))
 		printf("exit\n");
 	if (!args[1])
-		exit(last_status);
+	{
+		last_exit_status(last_status);
+		builtin_exit_requested(1);
+		return (last_status);
+	}
 	if (!is_valid_exit_arg(args[1]))
 	{
 		ft_putstr_fd("minishell: exit: numeric argument required\n", 2);
-		exit(2);
+		last_exit_status(2);
+		builtin_exit_requested(1);
+		return (2);
 	}
 	if (args[2])
 	{
 		ft_putstr_fd("minishell: exit: too many arguments\n", 2);
 		return (1);
 	}
-	exit(ft_atoi(args[1]) % 256);
-	return (0);
+	exit_code = (unsigned char)ft_atoi(args[1]);
+	last_exit_status(exit_code);
+	builtin_exit_requested(1);
+	return (exit_code);
 }

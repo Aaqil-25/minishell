@@ -12,21 +12,26 @@
 
 #include "minishell.h"
 
-void	handle_input(char *input, char ***env)
+int	handle_input(char *input, char ***env)
 {
 	t_token		*tokens;
 	t_command	*cmds;
+	int			status;
 
 	tokens = lexer(input);
 	if (!tokens)
-		return ;
+		return (0);
 	cmds = parser(&tokens);
 	free_tokens(&tokens);
 	if (!cmds)
-		return ;
+		return (0);
 	parse_env_variable(cmds, *env);
-	(void)execute(cmds, env);
+	status = execute(cmds, env);
 	free_commands(&cmds);
+	if (builtin_exit_requested(-1))
+		return (1);
+	(void)status;
+	return (0);
 }
 
 static char	*build_prompt(char **env)
@@ -52,6 +57,7 @@ int	prompt_and_read(char ***env)
 	char	*prompt;
 	char	*cont;
 	char	*tmp;
+	char	*joined;
 
 	prompt = build_prompt(*env);
 	(term_apply(1), g_signal = 0);
@@ -65,12 +71,20 @@ int	prompt_and_read(char ***env)
 		if (!cont)
 			return ((void)free(line), 1);
 		tmp = line;
-		line = ft_strjoin(ft_strjoin(tmp, "\n"), cont);
+		joined = ft_strjoin(tmp, "\n");
+		if (!joined)
+			return (free(tmp), free(cont), 1);
+		line = ft_strjoin(joined, cont);
+		free(joined);
+		if (!line)
+			return (free(tmp), free(cont), 1);
 		(free(tmp), free(cont));
 	}
 	if (g_signal != SIGINT && line[0] != '\0')
 		add_history(line);
-	(handle_input(line, env), free(line));
+	if (handle_input(line, env))
+		return (free(line), 1);
+	free(line);
 	return (0);
 }
 

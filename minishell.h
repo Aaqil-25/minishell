@@ -106,7 +106,7 @@ char		**append_to_array(char **array, char *new_str);
 int			prompt_and_read(char ***env);
 int			input_via_pipe(char ***env);
 char		*exec_get_env_value(char **env, char *name);
-void		handle_input(char *input, char ***env);
+int			handle_input(char *input, char ***env);
 int			has_unclosed_quotes(const char *str);
 void		init_default_env(char ***env);
 
@@ -121,6 +121,7 @@ int			builtin_export(char **args, char ***env);
 int			builtin_unset(char **args, char ***env);
 int			builtin_env(char **args, char **env);
 int			builtin_exit(char **args, int last_status);
+int			builtin_exit_requested(int set_value);
 
 /* Export helper function for unset */
 void		remove_export_only(char *name);

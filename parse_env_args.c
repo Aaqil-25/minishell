@@ -32,13 +32,16 @@ static int	arg_skip_quote(char *arg, size_t *i, char *quote)
 static char	*arg_handle_dollar(char *new_arg, char *arg, size_t *i, char **env)
 {
 	char	*replacement;
+	char	*result;
 
 	replacement = env_substitute(arg, i, env);
 	if (!replacement)
 		return (free(new_arg), NULL);
-	new_arg = env_append_part(new_arg, replacement, ft_strlen(replacement));
+	result = env_append_part(new_arg, replacement, ft_strlen(replacement));
 	free(replacement);
-	return (new_arg);
+	if (!result)
+		return (NULL);
+	return (result);
 }
 
 static char	*arg_append_one_char(char *new_arg, char *arg, size_t *i)
@@ -61,7 +64,7 @@ char	*parse_arg_by_quote(char *arg, char **env)
 		return (NULL);
 	quote = 0;
 	i = 0;
-	while (arg[i])
+	while (arg && arg[i])
 	{
 		if (arg_skip_quote(arg, &i, &quote))
 			continue ;
