@@ -12,6 +12,17 @@
 
 #include "minishell.h"
 
+static void	redir_syntax_error(t_token *target)
+{
+	ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
+	if (!target)
+		ft_putstr_fd("newline", 2);
+	else
+		ft_putstr_fd(target->value, 2);
+	ft_putstr_fd("'\n", 2);
+	last_exit_status(2);
+}
+
 static size_t	redir_name_len(const char *s)
 {
 	size_t	i;
@@ -70,8 +81,7 @@ t_redir	*add_redirection(t_redir *redir, t_redir *last_redir,
 	target = op_token->next;
 	if (!target || target->type != WORD)
 	{
-		ft_putstr_fd("minishell: syntax error near redirection\n", 2);
-		last_exit_status(2);
+		redir_syntax_error(target);
 		return (NULL);
 	}
 	current_redir = malloc(sizeof(t_redir));
