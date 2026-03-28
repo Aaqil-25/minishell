@@ -12,6 +12,41 @@
 
 #include "minishell.h"
 
+static int	is_fd_prefix(char *s)
+{
+	int	i;
+
+	if (!s || !s[0])
+		return (0);
+	i = 0;
+	while (s[i])
+	{
+		if (!ft_isdigit(s[i]))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+static int	parse_fd_prefixed_redir(t_command *cmd, t_token **current_token,
+		t_redir **last_redir)
+{
+	t_redir	*new_redirs;
+	int		fd_prefix;
+
+	if (!(*current_token)->next || !is_fd_prefix((*current_token)->value)
+		|| !is_redirection((*current_token)->next->type))
+		return (0);
+	fd_prefix = ft_atoi((*current_token)->value);
+	*current_token = (*current_token)->next;
+	new_redirs = parse_redirection(cmd->redirs, last_redir,
+			current_token, fd_prefix);
+	if (!new_redirs)
+		return (-1);
+	cmd->redirs = new_redirs;
+	return (1);
+}
+
 int	parse_word_token(t_command *cmd, t_token **current_token)
 {
 	char	**new_args;
@@ -28,24 +63,28 @@ int	parse_command_tokens(t_command *cmd, t_token **current_token,
 		t_redir **last_redir)
 {
 	t_redir	*new_redirs;
+	int		fd_redir_status;
 
 	while (*current_token && (*current_token)->type != PIPE)
 	{
 		if ((*current_token)->type == WORD)
 		{
-			if (!parse_word_token(cmd, current_token))
+			fd_redir_status = parse_fd_prefixed_redir(cmd, current_token,
+					last_redir);
+			if (fd_redir_status < 0 || (!fd_redir_status
+					&& !parse_word_token(cmd, current_token)))
 				return (0);
+			if (fd_redir_status == 1)
+				continue ;
+			continue ;
 		}
-		else if (is_redirection((*current_token)->type))
-		{
-			new_redirs = parse_redirection(cmd->redirs, last_redir,
-					current_token);
-			if (!new_redirs)
-				return (0);
-			cmd->redirs = new_redirs;
-		}
-		else
+		if (!is_redirection((*current_token)->type))
 			return (0);
+		new_redirs = parse_redirection(cmd->redirs, last_redir,
+				current_token, -1);
+		if (!new_redirs)
+			return (0);
+		cmd->redirs = new_redirs;
 	}
 	return (1);
 }

@@ -73,27 +73,27 @@ static char	*normalize_redir_name(const char *s)
 }
 
 t_redir	*add_redirection(t_redir *redir, t_redir *last_redir,
-		t_token *op_token)
+		t_token *op_token, int fd_prefix)
 {
 	t_redir	*current_redir;
 	t_token	*target;
 
 	target = op_token->next;
 	if (!target || target->type != WORD)
-	{
-		redir_syntax_error(target);
-		return (NULL);
-	}
+		return (redir_syntax_error(target), NULL);
 	current_redir = malloc(sizeof(t_redir));
 	if (!current_redir)
 		return (NULL);
 	current_redir->type = (t_redir_type)op_token->type;
+	current_redir->fd_target = fd_prefix;
+	if (fd_prefix < 0)
+		current_redir->fd_target = STDOUT_FILENO;
+	if (fd_prefix < 0 && (current_redir->type == C_REDIR_IN
+			|| current_redir->type == C_REDIR_HEREDOC))
+		current_redir->fd_target = STDIN_FILENO;
 	current_redir->filename = normalize_redir_name(target->value);
 	if (!current_redir->filename)
-	{
-		free(current_redir);
-		return (NULL);
-	}
+		return (free(current_redir), NULL);
 	current_redir->next = NULL;
 	if (!redir)
 		return (current_redir);
@@ -102,11 +102,12 @@ t_redir	*add_redirection(t_redir *redir, t_redir *last_redir,
 }
 
 t_redir	*parse_redirection(t_redir *redir, t_redir **last_redir,
-		t_token **current_token)
+		t_token **current_token, int fd_prefix)
 {
 	t_redir	*new_redir;
 
-	new_redir = add_redirection(redir, *last_redir, *current_token);
+	new_redir = add_redirection(redir, *last_redir, *current_token,
+			fd_prefix);
 	if (!new_redir)
 		return (NULL);
 	if (!redir)

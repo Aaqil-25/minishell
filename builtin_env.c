@@ -16,7 +16,8 @@ int	builtin_env(char **args, char **env)
 {
 	int	i;
 
-	(void)args;
+	if (args[1] && ft_strncmp(args[1], "-i", 3) == 0 && !args[2])
+		return (0);
 	i = 0;
 	while (env && env[i])
 	{

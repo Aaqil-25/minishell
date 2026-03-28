@@ -55,6 +55,7 @@ typedef enum e_redir_type
 typedef struct s_redir
 {
 	enum e_redir_type	type;
+	int					fd_target;
 	char				*filename;	/* for << this is the delimiter */
 	struct s_redir		*next;
 }	t_redir;
@@ -86,9 +87,9 @@ int			parse_command_tokens(t_command *cmd,\
 t_command	*create_command(t_token **current_token);
 int			is_redirection(t_token_type type);
 t_redir		*add_redirection(t_redir *redir, t_redir *last_redir,\
-	t_token *op_token);
+	t_token *op_token, int fd_prefix);
 t_redir		*parse_redirection(t_redir *redir,\
-	t_redir **last_redir, t_token **current_token);
+	t_redir **last_redir, t_token **current_token, int fd_prefix);
 t_command	*init_command(void);
 void		append_command(t_command **cmds, t_command *new_cmd);
 t_command	*parser(t_token **head);
@@ -120,6 +121,7 @@ int			builtin_pwd(char **args);
 int			builtin_export(char **args, char ***env);
 int			builtin_unset(char **args, char ***env);
 int			builtin_env(char **args, char **env);
+int			builtin_help(char **env);
 int			builtin_exit(char **args, int last_status);
 int			builtin_exit_requested(int set_value);
 
@@ -132,6 +134,7 @@ int			export_is_same_key(char *entry, char *arg);
 char		**export_clone_with_append(char **src, char *extra);
 int			export_has_name(char **arr, char *name);
 int			export_set_assignment(char *arg, char ***env);
+char		*export_build_append_arg(char *arg, char **env);
 int			add_export_only(char *arg, char **env);
 void		print_export_all(char **env);
 

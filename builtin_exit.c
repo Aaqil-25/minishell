@@ -39,6 +39,13 @@ static int	is_valid_exit_arg(char *s)
 	return (1);
 }
 
+static int	finish_exit(int status)
+{
+	last_exit_status(status);
+	builtin_exit_requested(1);
+	return (status);
+}
+
 int	builtin_exit(char **args, int last_status)
 {
 	int	exit_code;
@@ -47,17 +54,11 @@ int	builtin_exit(char **args, int last_status)
 	if (isatty(STDIN_FILENO))
 		printf("exit\n");
 	if (!args[1])
-	{
-		last_exit_status(last_status);
-		builtin_exit_requested(1);
-		return (last_status);
-	}
+		return (finish_exit(last_status));
 	if (!is_valid_exit_arg(args[1]))
 	{
 		ft_putstr_fd("minishell: exit: numeric argument required\n", 2);
-		last_exit_status(2);
-		builtin_exit_requested(1);
-		return (2);
+		return (finish_exit(2));
 	}
 	if (args[2])
 	{
@@ -65,7 +66,5 @@ int	builtin_exit(char **args, int last_status)
 		return (1);
 	}
 	exit_code = (unsigned char)ft_atoi(args[1]);
-	last_exit_status(exit_code);
-	builtin_exit_requested(1);
-	return (exit_code);
+	return (finish_exit(exit_code));
 }

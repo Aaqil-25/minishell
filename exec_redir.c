@@ -47,7 +47,7 @@ static int	fill_heredoc_pipe(char *delimiter, int write_fd, char **env)
 	return (0);
 }
 
-static int	apply_heredoc(char *delimiter, char **env)
+static int	apply_heredoc(char *delimiter, char **env, int target)
 {
 	int	pipefd[2];
 
@@ -55,7 +55,7 @@ static int	apply_heredoc(char *delimiter, char **env)
 		return (perror("pipe"), -1);
 	fill_heredoc_pipe(delimiter, pipefd[1], env);
 	close(pipefd[1]);
-	if (dup2(pipefd[0], STDIN_FILENO) < 0)
+	if (dup2(pipefd[0], target) < 0)
 	{
 		close(pipefd[0]);
 		return (perror("dup2"), -1);
@@ -72,18 +72,18 @@ int	exec_apply_redirections(t_command *cmd, char **env)
 	while (r)
 	{
 		if (r->type == C_REDIR_IN
-			&& open_and_dup(r->filename, O_RDONLY, STDIN_FILENO) != 0)
+			&& open_and_dup(r->filename, O_RDONLY, r->fd_target) != 0)
 			return (-1);
 		if (r->type == C_REDIR_OUT
 			&& open_and_dup(r->filename, O_WRONLY | O_CREAT | O_TRUNC,
-				STDOUT_FILENO) != 0)
+				r->fd_target) != 0)
 			return (-1);
 		if (r->type == C_REDIR_APPEND
 			&& open_and_dup(r->filename, O_WRONLY | O_CREAT | O_APPEND,
-				STDOUT_FILENO) != 0)
+				r->fd_target) != 0)
 			return (-1);
 		if (r->type == C_REDIR_HEREDOC
-			&& apply_heredoc(r->filename, env) != 0)
+			&& apply_heredoc(r->filename, env, r->fd_target) != 0)
 			return (-1);
 		r = r->next;
 	}

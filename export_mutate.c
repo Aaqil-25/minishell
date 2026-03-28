@@ -6,7 +6,7 @@
 /*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 00:00:00 by yurimdm           #+#    #+#             */
-/*   Updated: 2026/03/27 13:24:35 by yurimdm          ###   ########.fr       */
+/*   Updated: 2026/03/28 11:49:47 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,4 +97,32 @@ int	add_export_only(char *arg, char **env)
 	free_array_of_words(&export_only);
 	export_only_store(new_arr, 1);
 	return (1);
+}
+
+char	*export_build_append_arg(char *arg, char **env)
+{
+	char	*plus_eq;
+	char	*name;
+	char	*value;
+	char	*result;
+
+	plus_eq = ft_strchr(arg, '+');
+	if (!plus_eq || plus_eq[1] != '=')
+		return (ft_strdup(arg));
+	name = ft_substr(arg, 0, plus_eq - arg);
+	if (!name)
+		return (NULL);
+	value = exec_get_env_value(env, name);
+	if (value)
+		result = ft_strjoin(value, plus_eq + 2);
+	else
+		result = ft_strdup(plus_eq + 2);
+	if (!result)
+		return (free(name), NULL);
+	value = ft_strjoin(name, "=");
+	if (!value)
+		return (free(name), free(result), NULL);
+	free(name);
+	name = ft_strjoin(value, result);
+	return (free(value), free(result), name);
 }

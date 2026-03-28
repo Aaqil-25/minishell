@@ -13,25 +13,6 @@
 #include "minishell.h"
 #include <errno.h>
 
-
-static void	cleanup_shell(char **env)
-{
-	int	i;
-
-	if (!env)
-	{
-		rl_clear_history();
-		return ;
-	}
-	i = 0;
-	while (env[i])
-	{
-		free(env[i]);
-		i++;
-	}
-	free(env);
-	rl_clear_history();
-}
 static char	*build_env_entry(char *key, int value)
 {
 	char	*num;
@@ -131,13 +112,17 @@ int	main(int argc, char **argv, char **envp)
 	env = dup_env(envp);
 	if (!env)
 		return (1);
-	init_shlvl(&env);
-	init_default_env(&env);
+	if (env[0])
+	{
+		init_shlvl(&env);
+		init_default_env(&env);
+	}
 	signals_setup();
 	if (!isatty(STDIN_FILENO))
 		status = input_via_pipe(&env);
 	else
 		status = shell_loop(&env);
-	cleanup_shell(env);
+	free_array_of_words(&env);
+	rl_clear_history();
 	return (status);
 }

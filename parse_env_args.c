@@ -14,13 +14,25 @@
 
 static int	arg_skip_quote(char *arg, size_t *i, char *quote)
 {
-	if (!*quote && (arg[*i] == '\'' || arg[*i] == '"'))
+	size_t	backslashes;
+
+	backslashes = 0;
+	while (*i > backslashes && arg[*i - 1 - backslashes] == '\\')
+		backslashes++;
+	if (!*quote && (arg[*i] == '\'' || arg[*i] == '"')
+		&& ((backslashes % 2) == 0))
 	{
 		*quote = arg[*i];
 		(*i)++;
 		return (1);
 	}
-	if (*quote && arg[*i] == *quote && (*i == 0 || arg[*i - 1] != '\\'))
+	if (*quote == '\'' && arg[*i] == '\'')
+	{
+		*quote = 0;
+		(*i)++;
+		return (1);
+	}
+	if (*quote == '"' && arg[*i] == '"' && ((backslashes % 2) == 0))
 	{
 		*quote = 0;
 		(*i)++;
@@ -29,23 +41,54 @@ static int	arg_skip_quote(char *arg, size_t *i, char *quote)
 	return (0);
 }
 
-static char	*arg_handle_dollar(char *new_arg, char *arg, size_t *i, char **env)
+static char	*arg_expand_special(char *new_arg, char *arg,
+		size_t *i, char **env)
 {
+	char	*home;
 	char	*replacement;
-	char	*result;
 
+	if (*i == 0 && arg[*i] == '~'
+		&& (arg[*i + 1] == '\0' || arg[*i + 1] == '/'))
+	{
+		home = exec_get_env_value(env, "HOME");
+		(*i)++;
+		if (!home)
+			return (env_append_part(new_arg, "~", 1));
+		return (env_append_part(new_arg, home, ft_strlen(home)));
+	}
+	if (arg[*i] == '~')
+	{
+		new_arg = env_append_part(new_arg, arg + *i, 1);
+		(*i)++;
+		return (new_arg);
+	}
 	replacement = env_substitute(arg, i, env);
 	if (!replacement)
 		return (free(new_arg), NULL);
-	result = env_append_part(new_arg, replacement, ft_strlen(replacement));
+	new_arg = env_append_part(new_arg, replacement, ft_strlen(replacement));
 	free(replacement);
-	if (!result)
-		return (NULL);
-	return (result);
+	return (new_arg);
 }
 
-static char	*arg_append_one_char(char *new_arg, char *arg, size_t *i)
+static int	arg_char_escapable(char c)
 {
+	return (c == '"' || c == '$' || c == '\\' || c == '`' || c == '\n');
+}
+
+static char	*arg_append_one_char(char *new_arg, char *arg,
+		size_t *i, char quote)
+{
+	if (quote != '\'' && arg[*i] == '\\' && arg[*i + 1])
+	{
+		if (!quote || arg_char_escapable(arg[*i + 1]))
+		{
+			new_arg = env_append_part(new_arg, arg + *i + 1, 1);
+			if (!new_arg)
+				return (NULL);
+			*i += 2;
+			return (new_arg);
+		}
+	}
 	new_arg = env_append_part(new_arg, arg + *i, 1);
 	if (!new_arg)
 		return (NULL);
@@ -68,14 +111,14 @@ char	*parse_arg_by_quote(char *arg, char **env)
 	{
 		if (arg_skip_quote(arg, &i, &quote))
 			continue ;
-		if (arg[i] == '$' && quote != '\'')
+		if (quote != '\'' && (arg[i] == '$' || (i == 0 && arg[i] == '~')))
 		{
-			new_arg = arg_handle_dollar(new_arg, arg, &i, env);
+			new_arg = arg_expand_special(new_arg, arg, &i, env);
 			if (!new_arg)
 				return (NULL);
 			continue ;
 		}
-		new_arg = arg_append_one_char(new_arg, arg, &i);
+		new_arg = arg_append_one_char(new_arg, arg, &i, quote);
 		if (!new_arg)
 			return (NULL);
 	}

@@ -12,20 +12,39 @@
 
 #include "minishell.h"
 
-static int	valid_identifier(char *s)
+static int	unset_invalid_option(char *arg)
+{
+	ft_putstr_fd("minishell: unset: ", 2);
+	write(2, arg, 2);
+	ft_putstr_fd(": invalid option\n", 2);
+	ft_putstr_fd("unset: usage: unset [-f] [-v] [-n] [name ...]\n", 2);
+	return (2);
+}
+
+static int	unset_parse_options(char **args, int *start)
 {
 	int	i;
+	int	j;
 
-	if (!s || !s[0] || (!(ft_isalpha(s[0])) && s[0] != '_'))
-		return (0);
 	i = 1;
-	while (s[i])
+	while (args[i] && args[i][0] == '-' && args[i][1] != '\0')
 	{
-		if (!ft_isalnum(s[i]) && s[i] != '_')
-			return (0);
+		if (ft_strncmp(args[i], "--", 3) == 0)
+		{
+			i++;
+			break ;
+		}
+		j = 1;
+		while (args[i][j])
+		{
+			if (args[i][j] != 'f' && args[i][j] != 'v' && args[i][j] != 'n')
+				return (unset_invalid_option(args[i]));
+			j++;
+		}
 		i++;
 	}
-	return (1);
+	*start = i;
+	return (0);
 }
 
 static int	is_same_key(char *entry, char *var_name)
@@ -63,19 +82,15 @@ static int	remove_from_env(char *var_name, char ***env)
 int	builtin_unset(char **args, char ***env)
 {
 	int	i;
+	int	status;
 
-	i = 1;
+	status = unset_parse_options(args, &i);
+	if (status)
+		return (status);
 	while (args[i])
 	{
-		if (!valid_identifier(args[i]))
-		{
-			ft_putstr_fd("minishell: unset: not a valid identifier\n", 2);
-		}
-		else
-		{
-			remove_export_only(args[i]);
-			remove_from_env(args[i], env);
-		}
+		remove_export_only(args[i]);
+		remove_from_env(args[i], env);
 		i++;
 	}
 	return (0);

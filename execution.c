@@ -18,7 +18,7 @@ int	run_single(t_command *cmd, char ***env, int last_status)
 		return (last_status);
 	if (exec_is_builtin(cmd->args[0]))
 		return (run_builtin_cmd(cmd, env, last_status));
-	return (run_external_cmd(cmd, *env));
+	return (run_external_cmd(cmd, env));
 }
 
 int	execute(t_command *cmds, char ***env)

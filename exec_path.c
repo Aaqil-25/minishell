@@ -26,6 +26,19 @@ static char	*join_path(char *dir, char *name)
 	return (full);
 }
 
+static int	path_is_exec_file(char *full)
+{
+	struct stat	st;
+
+	if (access(full, X_OK) != 0)
+		return (0);
+	if (stat(full, &st) != 0)
+		return (0);
+	if (S_ISDIR(st.st_mode))
+		return (0);
+	return (1);
+}
+
 static char	*search_in_path(char **dirs, char *name)
 {
 	char	*full;
@@ -37,7 +50,7 @@ static char	*search_in_path(char **dirs, char *name)
 		full = join_path(dirs[i], name);
 		if (!full)
 			return (NULL);
-		if (access(full, X_OK) == 0)
+		if (path_is_exec_file(full))
 			return (full);
 		free(full);
 		i++;

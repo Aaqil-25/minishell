@@ -33,7 +33,7 @@ int		run_single(t_command *cmd, char ***env, int last_status);
 int		run_pipeline(t_command *cmds, int n, char **env, int last_status);
 
 int		run_builtin_cmd(t_command *cmd, char ***env, int last_status);
-int		run_external_cmd(t_command *cmd, char **env);
+int		run_external_cmd(t_command *cmd, char ***env);
 void	external_exit_status(int status);
 
 pid_t	*allocate_pids(int n);

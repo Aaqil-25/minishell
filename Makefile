@@ -15,6 +15,7 @@ SRC = main.c \
 		quotes_split.c \
 		term.c \
 		loop.c \
+		loop_prompt.c \
 		token.c \
 		parsing.c \
 		parse_exit_status.c \
@@ -41,6 +42,7 @@ SRC = main.c \
 		builtin_cd.c \
 		builtin_pwd.c \
 		builtin_env.c \
+		builtin_help.c \
 		builtin_export.c \
 		export_core.c \
 		export_mutate.c \

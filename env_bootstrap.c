@@ -12,6 +12,24 @@
 
 #include "minishell.h"
 
+static void	set_underscore_default(char ***env)
+{
+	char	*shell;
+	char	resolved[PATH_MAX];
+	char	*entry;
+
+	shell = exec_get_env_value(*env, "SHELL");
+	if (!shell || !shell[0])
+		shell = "/bin/bash";
+	if (!realpath(shell, resolved))
+		ft_strlcpy(resolved, shell, sizeof(resolved));
+	entry = ft_strjoin("_=", resolved);
+	if (!entry)
+		return ;
+	export_set_assignment(entry, env);
+	free(entry);
+}
+
 static void	add_if_missing(char ***env, char *name, char *entry)
 {
 	char	**new_env;
@@ -40,5 +58,5 @@ void	init_default_env(char ***env)
 	add_if_missing(env, "LS_COLORS", "LS_COLORS=");
 	add_if_missing(env, "LESSCLOSE", "LESSCLOSE=/usr/bin/lesspipe %s %s");
 	add_if_missing(env, "LESSOPEN", "LESSOPEN=| /usr/bin/lesspipe %s");
-	add_if_missing(env, "_", "_=/usr/bin/env");
+	set_underscore_default(env);
 }

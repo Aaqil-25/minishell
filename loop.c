@@ -12,13 +12,26 @@
 
 #include "minishell.h"
 
-int	handle_input(char *input, char ***env)
+static int	is_escaped_char(char *s, size_t i)
+{
+	int	count;
+
+	count = 0;
+	while (i > 0 && s[i - 1] == '\\')
+	{
+		count++;
+		i--;
+	}
+	return (count % 2);
+}
+
+static int	handle_segment(char *segment, char ***env)
 {
 	t_token		*tokens;
 	t_command	*cmds;
 	int			status;
 
-	tokens = lexer(input);
+	tokens = lexer(segment);
 	if (!tokens)
 		return (0);
 	cmds = parser(&tokens);
@@ -34,66 +47,62 @@ int	handle_input(char *input, char ***env)
 	return (0);
 }
 
-static char	*build_prompt(char **env)
+static int	process_segment(char *input, size_t start, size_t end, char ***env)
 {
-	char	*username;
-	char	*prompt;
+	char	*segment;
+	char	*trimmed;
 
-	username = exec_get_env_value(env, "USER");
-	if (username)
-	{
-		username = ft_strjoin(username, "@");
-		prompt = ft_strjoin(username, PROMPT);
-		free(username);
-	}
-	else
-		prompt = ft_strdup(PROMPT);
-	return (prompt);
-}
-
-int	prompt_and_read(char ***env)
-{
-	char	*line;
-	char	*prompt;
-	char	*cont;
-	char	*tmp;
-	char	*joined;
-
-	prompt = build_prompt(*env);
-	(term_apply(1), g_signal = 0);
-	line = readline(prompt);
-	(term_apply(0), free(prompt));
-	if (!line)
-		return (1);
-	while (has_unclosed_quotes(line))
-	{
-		cont = readline("> ");
-		if (!cont)
-			return ((void)free(line), 1);
-		tmp = line;
-		joined = ft_strjoin(tmp, "\n");
-		if (!joined)
-			return (free(tmp), free(cont), 1);
-		line = ft_strjoin(joined, cont);
-		free(joined);
-		if (!line)
-			return (free(tmp), free(cont), 1);
-		(free(tmp), free(cont));
-	}
-	if (g_signal != SIGINT && line[0] != '\0')
-		add_history(line);
-	if (handle_input(line, env))
-		return (free(line), 1);
-	free(line);
+	segment = ft_substr(input, start, end - start);
+	if (!segment)
+		return (-1);
+	trimmed = ft_strtrim(segment, " \t\n");
+	free(segment);
+	if (!trimmed)
+		return (-1);
+	if (trimmed[0] != '#' && trimmed[0] && handle_segment(trimmed, env))
+		return (free(trimmed), 1);
+	free(trimmed);
 	return (0);
 }
 
-int	shell_loop(char ***env)
+static int	is_segment_end(char *input, size_t i, char *quote)
 {
-	int	error;
+	if (input[i] && !is_escaped_char(input, i)
+		&& (input[i] == '\'' || input[i] == '"'))
+	{
+		if (!*quote)
+			*quote = input[i];
+		else if (*quote == input[i])
+			*quote = 0;
+	}
+	if ((input[i] == ';' && !*quote && !is_escaped_char(input, i))
+		|| input[i] == '\0')
+		return (1);
+	return (0);
+}
 
-	error = 0;
-	while (!error)
-		error = prompt_and_read(env);
-	return (error);
+int	handle_input(char *input, char ***env)
+{
+	size_t	i;
+	size_t	start;
+	char	quote;
+	int		status;
+
+	i = 0;
+	start = 0;
+	quote = 0;
+	while (1)
+	{
+		if (is_segment_end(input, i, &quote))
+		{
+			status = process_segment(input, start, i, env);
+			if (status != 0)
+				return (status == 1);
+			if (input[i] == '\0')
+				break ;
+			start = i + 1;
+		}
+		i++;
+	}
+	return (0);
 }

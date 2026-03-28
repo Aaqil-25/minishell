@@ -15,6 +15,17 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+static void	update_underscore(char ***env, char *value)
+{
+	char	*tmp;
+
+	tmp = ft_strjoin("_=", value);
+	if (!tmp)
+		return ;
+	export_set_assignment(tmp, env);
+	free(tmp);
+}
+
 static void	report_execve_error(char *name)
 {
 	struct stat	st;
@@ -50,15 +61,20 @@ static int	report_path_errors(t_command *cmd)
 	struct stat	st;
 	char		*tmp;
 
-	if (ft_strchr(cmd->args[0], '/') && stat(cmd->args[0], &st) == 0)
+	if (ft_strchr(cmd->args[0], '/'))
 	{
-		if (S_ISDIR(st.st_mode))
-			tmp = ft_strjoin(cmd->args[0], ": Is a directory\n");
-		else
-			tmp = ft_strjoin(cmd->args[0], ": Permission denied\n");
-		ft_putstr_fd(tmp, 2);
-		free(tmp);
-		return (126);
+		if (stat(cmd->args[0], &st) == 0)
+		{
+			if (S_ISDIR(st.st_mode))
+				tmp = ft_strjoin(cmd->args[0], ": Is a directory\n");
+			else
+				tmp = ft_strjoin(cmd->args[0], ": Permission denied\n");
+			ft_putstr_fd(tmp, 2);
+			free(tmp);
+			return (126);
+		}
+		perror(cmd->args[0]);
+		return (127);
 	}
 	tmp = ft_strjoin(cmd->args[0], ": command not found\n");
 	ft_putstr_fd(tmp, 2);
@@ -66,19 +82,20 @@ static int	report_path_errors(t_command *cmd)
 	return (127);
 }
 
-int	run_external_cmd(t_command *cmd, char **env)
+int	run_external_cmd(t_command *cmd, char ***env)
 {
 	pid_t	pid;
 	char	*path;
 	int		status;
 	pid_t	wpid;
 
-	path = exec_find_path(cmd->args[0], env);
+	path = exec_find_path(cmd->args[0], *env);
 	if (!path)
 		return (report_path_errors(cmd));
+	update_underscore(env, path);
 	pid = fork();
 	if (pid == 0)
-		try_execve_child(cmd, env, path);
+		try_execve_child(cmd, *env, path);
 	free(path);
 	wpid = waitpid(pid, &status, 0);
 	while (wpid < 0 && errno == EINTR)
