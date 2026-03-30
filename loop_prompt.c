@@ -6,7 +6,7 @@
 /*   By: yurimdm <yurimdm@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/28 00:00:00 by yurimdm           #+#    #+#             */
-/*   Updated: 2026/03/28 11:35:53 by yurimdm          ###   ########.fr       */
+/*   Updated: 2026/03/28 21:09:09 by yurimdm          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,9 +94,13 @@ int	prompt_and_read(char ***env)
 int	shell_loop(char ***env)
 {
 	int	error;
+	int	exit_status;
 
 	error = 0;
 	while (!error)
 		error = prompt_and_read(env);
+	exit_status = last_exit_status(-1);
+	if (exit_status != -1)
+		return (exit_status);
 	return (error);
 }
